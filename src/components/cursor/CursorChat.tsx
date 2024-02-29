@@ -1,4 +1,5 @@
 import { CursorChatProps, CursorMode } from "@/types/type";
+import { useCallback } from "react";
 
 export default function CursorChat({
   cursor,
@@ -44,12 +45,15 @@ export default function CursorChat({
       }}
     >
       {cursorState.mode === CursorMode.Chat && (
-        <div className="absolute left-4 top-6 flex h-auto w-48 flex-col rounded-md bg-primary px-4 py-2 text-sm leading-relaxed text-foreground shadow-lg shadow-primary/30 ring-2 ring-inset ring-white/30">
+        <div
+          className="absolute left-4 top-6 flex h-auto w-48 flex-col rounded-md bg-primary px-4 py-2 text-sm leading-relaxed text-white/80 shadow-lg shadow-primary/30 ring-2 ring-inset ring-white/30"
+          onKeyUp={(e) => e.stopPropagation()}
+        >
           {cursorState.previousMessage && (
-            <p className="text-foreground/60">{cursorState.previousMessage}</p>
+            <p className="text-white/60">{cursorState.previousMessage}</p>
           )}
           <input
-            className="block h-auto w-full resize-none border-none bg-transparent placeholder-foreground/60 outline-none"
+            className="block h-auto w-full resize-none border-none bg-transparent placeholder-white/60 outline-none"
             autoFocus={true}
             onChange={handleChange}
             onKeyDown={handleKeydown}

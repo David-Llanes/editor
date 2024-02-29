@@ -1,8 +1,12 @@
 import { LiveCursorProps } from "@/types/type";
 import Cursor from "./Cursor";
 import { COLORS } from "@/constants";
+import { useOthers } from "@root/liveblocks.config";
 
 export default function LiveCursors({ others }: LiveCursorProps) {
+  // const others = useOthers();
+
+  console.log("LiveCursors rerendered");
   return others.map(({ connectionId, presence }) => {
     if (presence.cursor === null) return null;
 
@@ -17,3 +21,5 @@ export default function LiveCursors({ others }: LiveCursorProps) {
     );
   });
 }
+
+//export default function LiveCursors({ others }: LiveCursorProps) {

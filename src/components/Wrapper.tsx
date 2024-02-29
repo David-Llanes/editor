@@ -1,32 +1,17 @@
 "use client";
 
-import {
-  useBroadcastEvent,
-  useEventListener,
-  useMyPresence,
-  useOthers,
-} from "@root/liveblocks.config";
-import LiveCursors from "./cursor/LiveCursors";
+import { CursorState } from "@/types/type";
+import { useMyPresence } from "@root/liveblocks.config";
 import { useCallback, useEffect, useState } from "react";
-import CursorChat from "./cursor/CursorChat";
-import { CursorMode, CursorState, Reaction, ReactionEvent } from "@/types/type";
-import useInterval from "@/hooks/useInterval";
-import ReactionSelector from "./reaction/ReactionSelector";
-import FlyingReaction from "./reaction/FlyingReaction";
-import Reactions from "./Reactions";
+import { CursorMode } from "@/types/type";
 
-export default function Live() {
-  const others = useOthers();
+export default function Wrapper({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const [{ cursor }, updateMyPresence] = useMyPresence();
   const [cursorState, setCursorState] = useState<CursorState>({
     mode: CursorMode.Hidden,
   });
-
-  const [reactions, setReactions] = useState<Reaction[]>([]);
-
-  const setReaction = useCallback((reaction: string) => {
-    setCursorState({ mode: CursorMode.Reaction, reaction, isPressed: false });
-  }, []);
 
   useEffect(() => {
     function onKeyUp(e: KeyboardEvent) {
@@ -45,10 +30,6 @@ export default function Live() {
         setCursorState({ mode: CursorMode.ReactionSelector });
       }
     }
-    // ARREGLAR LO DE PRESIONAR E Y /, DESDE CURSORCHAT
-    // e.key === "/" && cursorState.mode !== CursorMode.Chat;
-    // e.key === "Escape" && cursorState.mode !== CursorMode.Hidden;
-    // e.key === "e" && cursorState.mode === CursorMode.Hidden
     window.addEventListener("keyup", onKeyUp);
 
     return () => {
@@ -56,20 +37,6 @@ export default function Live() {
     };
   }, [updateMyPresence]);
 
-  useEventListener((eventData) => {
-    const event = eventData.event as ReactionEvent;
-    setReactions((reactions) =>
-      reactions.concat([
-        {
-          point: { x: event.x, y: event.y },
-          value: event.value,
-          timestamp: Date.now(),
-        },
-      ]),
-    );
-  });
-
-  // DE AQUI A ABAJO ES LO QUE DEBO DEJAR EN ESTE COMPONENTE
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     if (cursor == null || cursorState.mode !== CursorMode.ReactionSelector) {
@@ -97,14 +64,6 @@ export default function Live() {
     const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
     updateMyPresence({ cursor: { x, y } });
 
-    // if (cursorState.mode === CursorMode.Chat) {
-    //   console.log("Cerraste el chat con clic");
-    //   updateMyPresence({ message: "" });
-    //   setCursorState({
-    //     mode: CursorMode.Hidden,
-    //   });
-    // }
-
     setCursorState((state) => {
       if (state.mode === CursorMode.Reaction) {
         return { ...state, isPressed: true };
@@ -130,7 +89,6 @@ export default function Live() {
         : state,
     );
   }, []);
-
   return (
     <div
       className="relative flex h-svh w-full items-center justify-center overflow-hidden"
@@ -139,34 +97,7 @@ export default function Live() {
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
-      <Reactions cursor={cursor} cursorState={cursorState} />
-      <h1>...</h1>
-      {cursor && (
-        <>
-          <CursorChat
-            cursor={cursor}
-            cursorState={cursorState}
-            setCursorState={setCursorState}
-            updateMyPresence={updateMyPresence}
-          />
-          {cursorState.mode === CursorMode.Reaction && (
-            <div
-              className="pointer-events-none absolute left-3 top-5 select-none"
-              style={{
-                transform: `translateX(${cursor.x}px) translateY(${cursor.y}px)`,
-              }}
-            >
-              {cursorState.reaction}
-            </div>
-          )}
-        </>
-      )}
-
-      {cursorState.mode === CursorMode.ReactionSelector && (
-        <ReactionSelector setReaction={(reaction) => setReaction(reaction)} />
-      )}
-
-      <LiveCursors others={others} />
+      {children}
     </div>
   );
 }

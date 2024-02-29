@@ -20,7 +20,7 @@ export function ThemeToggle() {
         <Button
           variant="link"
           size="icon"
-          className="rounded-full text-foreground"
+          className="aspect-square rounded-full text-foreground"
         >
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0 " />
           <MoonStar className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
