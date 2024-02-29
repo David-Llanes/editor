@@ -1,17 +1,20 @@
-"use client";
-
 import { CursorState } from "@/types/type";
 import { useMyPresence } from "@root/liveblocks.config";
 import { useCallback, useEffect, useState } from "react";
 import { CursorMode } from "@/types/type";
 
+type WrapperProps = {
+  children: React.ReactNode;
+  cursorState: CursorState;
+  setCursorState: (cursorState: CursorState) => void;
+};
+
 export default function Wrapper({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  cursorState,
+  setCursorState,
+}: WrapperProps) {
   const [{ cursor }, updateMyPresence] = useMyPresence();
-  const [cursorState, setCursorState] = useState<CursorState>({
-    mode: CursorMode.Hidden,
-  });
 
   useEffect(() => {
     function onKeyUp(e: KeyboardEvent) {

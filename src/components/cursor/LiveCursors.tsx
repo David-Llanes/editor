@@ -1,25 +1,20 @@
-import { LiveCursorProps } from "@/types/type";
 import Cursor from "./Cursor";
-import { COLORS } from "@/constants";
-import { useOthers } from "@root/liveblocks.config";
+import { useOthersConnectionIds } from "@root/liveblocks.config";
+import { memo } from "react";
 
-export default function LiveCursors({ others }: LiveCursorProps) {
-  // const others = useOthers();
-
+function LiveCursors() {
+  const othersConnectionIds = useOthersConnectionIds();
   console.log("LiveCursors rerendered");
-  return others.map(({ connectionId, presence }) => {
-    if (presence.cursor === null) return null;
 
-    return (
-      <Cursor
-        key={`cursor-${connectionId}`}
-        color={COLORS[Number(connectionId) % COLORS.length]}
-        x={presence.cursor.x}
-        y={presence.cursor.y}
-        message={presence.message}
-      />
-    );
-  });
+  return (
+    <>
+      {othersConnectionIds.map((id) => (
+        <Cursor key={id} connectionId={id} />
+      ))}
+    </>
+  );
 }
 
-//export default function LiveCursors({ others }: LiveCursorProps) {
+export default memo(LiveCursors);
+
+//https://liveblocks.io/docs/api-reference/liveblocks-react#useOther

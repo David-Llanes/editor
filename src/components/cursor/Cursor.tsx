@@ -1,15 +1,19 @@
-type CursorProps = {
-  color: string;
-  x: number;
-  y: number;
-  message: string;
-};
+import { COLORS } from "@/constants";
+import { useOther } from "@root/liveblocks.config";
 
-export default function Cursor({ color, x, y, message }: CursorProps) {
+export default function Cursor({ connectionId }: { connectionId: number }) {
+  const { cursor, message } = useOther(connectionId, (other) => {
+    return { cursor: other.presence.cursor, message: other.presence.message };
+  });
+  const color = COLORS[connectionId % COLORS.length];
+
+  if (cursor === null) return null;
   return (
     <div
       className="pointer-events-none absolute left-0 top-0"
-      style={{ transform: `translateX(${x}px) translateY(${y}px)` }}
+      style={{
+        transform: `translateX(${cursor?.x}px) translateY(${cursor?.y}px)`,
+      }}
     >
       <svg
         className="relative"

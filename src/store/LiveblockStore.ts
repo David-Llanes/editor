@@ -4,15 +4,37 @@ import create from "zustand";
 import { liveblocks } from "@liveblocks/zustand";
 import type { WithLiveblocks } from "@liveblocks/zustand";
 import { client } from "@root/liveblocks.config";
+import {
+  CursorChat,
+  CursorHidden,
+  CursorMode,
+  CursorReaction,
+  CursorReactionSelector,
+  CursorState,
+  Reaction,
+} from "@/types/type";
 
 type State = {
-  // Your Zustand state type will be defined here
+  cursorState: CursorState;
+  reactions: Reaction[];
 };
 
-const useLiveblocksStore = create<WithLiveblocks<State>>()(
+type Actions = {
+  setCursorStateHidden: (state: CursorHidden) => void;
+  setCursorStateChat: (state: CursorChat) => void;
+  setCursorStateReaction: (state: CursorReaction) => void;
+  setCursorStateReactionSelector: (state: CursorReactionSelector) => void;
+};
+
+const useLiveblocksStore = create<WithLiveblocks<State & Actions>>()(
   liveblocks(
     (set) => ({
-      // Your state and actions will go here
+      cursorState: { mode: CursorMode.Hidden },
+      reactions: [],
+      setCursorStateHidden: (state) => set({ cursorState: state }),
+      setCursorStateChat: (state) => set({ cursorState: state }),
+      setCursorStateReaction: (state) => set({ cursorState: state }),
+      setCursorStateReactionSelector: (state) => set({ cursorState: state }),
     }),
     { client },
   ),

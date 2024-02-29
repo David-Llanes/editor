@@ -1,18 +1,24 @@
 import { CursorMode, Reaction, ReactionEvent } from "@/types/type";
-import { useState } from "react";
-import FlyingReaction from "./reaction/FlyingReaction";
+import { useCallback, useState } from "react";
+import FlyingReaction from "./FlyingReaction";
 import useInterval from "@/hooks/useInterval";
-import { useBroadcastEvent, useEventListener } from "@root/liveblocks.config";
+import {
+  useBroadcastEvent,
+  useEventListener,
+  useSelf,
+} from "@root/liveblocks.config";
 import { CursorState } from "@/types/type";
 
 type Props = {
-  cursor: { x: number; y: number } | null;
   cursorState: CursorState;
+  setCursorState: (cursorState: CursorState) => void;
 };
 
-export default function Reactions({ cursor, cursorState }: Props) {
+export default function Reactions({ cursorState, setCursorState }: Props) {
   const [reactions, setReactions] = useState<Reaction[]>([]);
+  const cursor = useSelf((me) => me.presence.cursor);
   const broadcast = useBroadcastEvent();
+
   console.log("Reactions rerender");
 
   useEventListener((eventData) => {
@@ -27,8 +33,10 @@ export default function Reactions({ cursor, cursorState }: Props) {
       ]),
     );
   });
+
   // Remove reactions that are not visible anymore (every 1 sec)
   useInterval(() => {
+    if (reactions.length === 0) return;
     setReactions((reactions) =>
       reactions.filter((reaction) => reaction.timestamp > Date.now() - 3000),
     );
@@ -56,6 +64,9 @@ export default function Reactions({ cursor, cursorState }: Props) {
       });
     }
   }, 150);
+
+  if (reactions.length === 0) return null;
+
   return reactions.map((reaction) => {
     return (
       <FlyingReaction
@@ -68,3 +79,5 @@ export default function Reactions({ cursor, cursorState }: Props) {
     );
   });
 }
+
+// Falta tener el estado manejado con zustand para que Flying reacion renderice las reacciones basadas en el store.
