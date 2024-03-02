@@ -1,5 +1,6 @@
 import { BaseUserMeta, User } from "@liveblocks/client";
 import { Gradient, Pattern } from "fabric/fabric-impl";
+import { Dispatch, SetStateAction } from "react";
 
 export enum CursorMode {
   Hidden,
@@ -34,11 +35,14 @@ export type CursorState =
   | CursorReactionSelector
   | CursorReaction;
 
+export type SetCursorState = Dispatch<SetStateAction<CursorState>>;
+
 export type Reaction = {
   value: string;
   timestamp: number;
   point: { x: number; y: number };
 };
+export type SetReaction = Dispatch<SetStateAction<Reaction[]>>;
 
 export type ReactionEvent = {
   x: number;

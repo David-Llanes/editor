@@ -1,30 +1,13 @@
-import { CursorMode, Reaction, ReactionEvent } from "@/types/type";
-import { useCallback, useState } from "react";
-import FlyingReaction from "./FlyingReaction";
-import useInterval from "@/hooks/useInterval";
-import {
-  useBroadcastEvent,
-  useEventListener,
-  useSelf,
-} from "@root/liveblocks.config";
-import { CursorState } from "@/types/type";
+import { Reaction } from "@/types/type";
+import { useState } from "react";
 import ReactionsWrapper from "./ReactionsWrapper";
 import Reactions from "./Reactions";
 
-type Props = {
-  cursorState: CursorState;
-  setCursorState: (cursorState: CursorState) => void;
-};
-
-export default function LiveReactions({ cursorState, setCursorState }: Props) {
+export default function LiveReactions() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
 
   return (
-    <ReactionsWrapper
-      cursorState={cursorState}
-      reactions={reactions}
-      setReactions={setReactions}
-    >
+    <ReactionsWrapper reactions={reactions} setReactions={setReactions}>
       <Reactions reactions={reactions} />
     </ReactionsWrapper>
   );

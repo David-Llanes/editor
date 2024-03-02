@@ -1,16 +1,12 @@
-import { CursorChatProps, CursorMode } from "@/types/type";
 import ChatWrapper from "./ChatWrapper";
 import Chat from "./Chat";
 
-export default function LiveChat({
-  cursorState,
-  setCursorState,
-}: CursorChatProps) {
+export default function LiveChat() {
   console.log("Rerender cursorChat");
 
   return (
     <ChatWrapper>
-      <Chat cursorState={cursorState} setCursorState={setCursorState} />
+      <Chat />
     </ChatWrapper>
   );
 }

@@ -1,3 +1,4 @@
+import { useCursorState } from "@/store/Provider";
 import { CursorMode, CursorState } from "@/types/type";
 import { useUpdateMyPresence } from "@root/liveblocks.config";
 
@@ -6,7 +7,11 @@ type ChatProps = {
   setCursorState: (cursorState: CursorState) => void;
 };
 
-export default function Chat({ cursorState, setCursorState }: ChatProps) {
+export default function Chat() {
+  const [cursorState, setCursorState] = useCursorState()((state) => [
+    state.cursorState,
+    state.setCursosState,
+  ]);
   const updateMyPresence = useUpdateMyPresence();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateMyPresence({ message: e.target.value });

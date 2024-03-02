@@ -1,7 +1,17 @@
 import { Room } from "@/components/Room";
+import CursorStateProvider from "@/store/Provider";
+import { CursorMode } from "@/types/type";
 
 export default function CanvasLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <Room>{children}</Room>;
+  return (
+    <CursorStateProvider
+      cursorState={{
+        mode: CursorMode.Hidden,
+      }}
+    >
+      <Room>{children}</Room>
+    </CursorStateProvider>
+  );
 }

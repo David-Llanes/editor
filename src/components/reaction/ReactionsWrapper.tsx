@@ -1,28 +1,26 @@
 import React, { Dispatch, SetStateAction } from "react";
 
-import { CursorMode, CursorState, Reaction, ReactionEvent } from "@/types/type";
-import { useCallback, useState } from "react";
-import FlyingReaction from "./FlyingReaction";
+import { CursorMode, Reaction, ReactionEvent } from "@/types/type";
 import useInterval from "@/hooks/useInterval";
 import {
   useBroadcastEvent,
   useEventListener,
   useSelf,
 } from "@root/liveblocks.config";
+import { useCursorState } from "@/store/Provider";
 
 type Props = {
-  cursorState: CursorState;
   reactions: Reaction[];
   setReactions: Dispatch<SetStateAction<Reaction[]>>;
   children: React.ReactNode;
 };
 
 export default function ReactionsWrapper({
-  cursorState,
   reactions,
   setReactions,
   children,
 }: Props) {
+  const cursorState = useCursorState()((state) => state.cursorState);
   const cursor = useSelf((me) => me.presence.cursor);
   const broadcast = useBroadcastEvent();
 
