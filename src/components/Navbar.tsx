@@ -5,7 +5,8 @@ import { memo } from "react";
 import Image from "next/image";
 import { NavbarProps } from "@/types/type";
 
-function Navbar({ activeElement }: NavbarProps) {
+// { activeElement }: NavbarProps
+function Navbar() {
   console.log("Navbar rerendered");
   // const isActive = (value: string | Array<ActiveElement>) =>
   //   (activeElement && activeElement.value === value) ||
@@ -13,10 +14,14 @@ function Navbar({ activeElement }: NavbarProps) {
   //     value.some((val) => val?.value === activeElement?.value));
 
   return (
-    <nav className="flex max-h-20 select-none items-center justify-between gap-4 bg-red-900 px-5 text-foreground">
-      <Image src="/assets/logo.svg" alt="Logo" width={58} height={20} />
-      <LiveAvatars />
-      <ThemeToggle />
+    <nav className="bg-border shadow-md">
+      <div className="mx-auto flex h-16 max-w-7xl select-none items-center justify-between gap-4 p-2 text-foreground sm:px-6 lg:px-8">
+        <Image src="/assets/logo.svg" alt="Logo" width={58} height={20} />
+        <div className="flex items-center justify-center gap-2">
+          <LiveAvatars />
+          <ThemeToggle />
+        </div>
+      </div>
     </nav>
   );
 }

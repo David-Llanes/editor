@@ -7,6 +7,8 @@ export default function Cursor({ connectionId }: { connectionId: number }) {
   });
   const color = COLORS[connectionId % COLORS.length];
 
+  // console.log(`Cursor ${connectionId} moviendose`);
+
   if (cursor === null) return null;
   return (
     <div
@@ -44,3 +46,5 @@ export default function Cursor({ connectionId }: { connectionId: number }) {
     </div>
   );
 }
+
+// transition: "transform 0.2s ease-out",

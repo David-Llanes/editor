@@ -9,7 +9,6 @@ type ChatProps = {
 export default function Chat({ cursorState, setCursorState }: ChatProps) {
   const updateMyPresence = useUpdateMyPresence();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(cursorState.mode);
     updateMyPresence({ message: e.target.value });
     if (cursorState.mode === CursorMode.Chat) {
       setCursorState({
@@ -40,13 +39,20 @@ export default function Chat({ cursorState, setCursorState }: ChatProps) {
 
   return (
     <>
+      {cursorState.mode === CursorMode.Reaction && (
+        <div className="absolute left-3 top-4 animate-pulse select-none">
+          {cursorState.reaction}
+        </div>
+      )}
       {cursorState.mode === CursorMode.Chat && (
         <div
           className="absolute left-4 top-6 flex h-auto w-48 flex-col rounded-md bg-primary px-4 py-2 text-sm leading-relaxed text-white/80 shadow-lg shadow-primary/30 ring-2 ring-inset ring-white/30"
           onKeyUp={(e) => e.stopPropagation()}
         >
           {cursorState.previousMessage && (
-            <p className="text-white/60">{cursorState.previousMessage}</p>
+            <p className="pointer text-white/60">
+              {cursorState.previousMessage}
+            </p>
           )}
           <input
             className="block h-auto w-full resize-none border-none bg-transparent placeholder-white/60 outline-none"

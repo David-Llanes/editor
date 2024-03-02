@@ -2,7 +2,7 @@ import { CursorChatProps, CursorMode } from "@/types/type";
 import ChatWrapper from "./ChatWrapper";
 import Chat from "./Chat";
 
-export default function CursorChat({
+export default function LiveChat({
   cursorState,
   setCursorState,
 }: CursorChatProps) {

@@ -11,8 +11,8 @@ export default function LiveAvatars() {
 
   const memoizedUsers = useMemo(() => {
     return (
-      <div className="flex w-full select-none items-center justify-center ">
-        <div className="flex pl-3">
+      <div className="flex max-h-10 w-full select-none items-center justify-center">
+        <div className="flex h-full pl-3">
           {users.slice(0, 3).map(({ connectionId, info }) => {
             return <Avatar key={connectionId} name={generateRandomName()} />;
           })}

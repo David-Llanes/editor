@@ -1,12 +1,12 @@
-import Live from "@/components/Live";
+import Workspace from "@/components/Workspace";
 import Navbar from "@/components/Navbar";
 
 export default function Page() {
   return (
-    <main className="h-svh overflow-hidden">
+    <main className="overflow-hidden">
       <Navbar />
       <section className="flex h-full flex-row">
-        <Live />;
+        <Workspace />
       </section>
     </main>
   );

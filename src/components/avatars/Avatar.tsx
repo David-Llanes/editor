@@ -6,7 +6,7 @@ const IMAGE_SIZE = 42;
 
 export function Avatar({ name }: { src?: string; name: string }) {
   return (
-    <div className={`${styles.avatar} size-9`} data-tooltip={name}>
+    <div className={`${styles.avatar} size-10`} data-tooltip={name}>
       <Image
         src={`https://liveblocks.io/avatars/avatar-${Math.floor(Math.random() * 30)}.png`}
         alt="Avatar Picture"

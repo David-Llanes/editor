@@ -4,15 +4,9 @@ import { memo } from "react";
 
 function LiveCursors() {
   const othersConnectionIds = useOthersConnectionIds();
-  console.log("LiveCursors rerendered");
+  console.log(`Hay ${othersConnectionIds.length} personas conectadas`);
 
-  return (
-    <>
-      {othersConnectionIds.map((id) => (
-        <Cursor key={id} connectionId={id} />
-      ))}
-    </>
-  );
+  return othersConnectionIds.map((id) => <Cursor key={id} connectionId={id} />);
 }
 
 export default memo(LiveCursors);

@@ -10,7 +10,7 @@ export default function ChatWrapper({
   if (cursor === null) return null;
   return (
     <div
-      className="absolute left-0 top-0"
+      className="absolute left-0 top-0 select-none"
       style={{
         transform: `translateX(${cursor?.x}px) translateY(${cursor?.y}px)`,
       }}

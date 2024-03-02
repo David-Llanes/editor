@@ -24,6 +24,7 @@ type Actions = {
   setCursorStateChat: (state: CursorChat) => void;
   setCursorStateReaction: (state: CursorReaction) => void;
   setCursorStateReactionSelector: (state: CursorReactionSelector) => void;
+  setReactions: (reactions: Reaction[]) => void;
 };
 
 const useLiveblocksStore = create<WithLiveblocks<State & Actions>>()(
@@ -35,6 +36,7 @@ const useLiveblocksStore = create<WithLiveblocks<State & Actions>>()(
       setCursorStateChat: (state) => set({ cursorState: state }),
       setCursorStateReaction: (state) => set({ cursorState: state }),
       setCursorStateReactionSelector: (state) => set({ cursorState: state }),
+      setReactions: (reactions) => set({ reactions }),
     }),
     { client },
   ),
