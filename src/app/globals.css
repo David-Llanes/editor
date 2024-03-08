@@ -24,11 +24,11 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.3rem;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 84% 5.7%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -74,5 +74,19 @@
 
   .right-menu-item {
     @apply hover:bg-primary-grey-200 flex justify-between px-3 py-2 !important;
+  }
+}
+
+.header-fade-in {
+  animation: fade-in-animation linear both;
+  animation-timeline: scroll(root);
+  animation-range: entry 0px exit 4rem;
+}
+@keyframes fade-in-animation {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: hsl(var(--background) / 95%);
   }
 }

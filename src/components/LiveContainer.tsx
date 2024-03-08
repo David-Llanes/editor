@@ -1,11 +1,11 @@
-import { CursorState } from "@/types/type";
-import { useMyPresence } from "@root/liveblocks.config";
-import { useCallback, useEffect, useState } from "react";
+import { useMyPresence, useUpdateMyPresence } from "@root/liveblocks.config";
+import { useEffect } from "react";
 import { CursorMode } from "@/types/type";
 import { useCursorState } from "@/store/Provider";
 
 type Props = {
   children: React.ReactNode;
+  // canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 
 export default function LiveContainer({ children }: Props) {
@@ -13,7 +13,8 @@ export default function LiveContainer({ children }: Props) {
     state.cursorState,
     state.setCursosState,
   ]);
-  const [{ cursor }, updateMyPresence] = useMyPresence();
+  // const [{ cursor }, updateMyPresence] = useMyPresence();
+  const updateMyPresence = useUpdateMyPresence();
 
   useEffect(() => {
     function onKeyUp(e: KeyboardEvent) {
@@ -40,63 +41,58 @@ export default function LiveContainer({ children }: Props) {
     return () => {
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [cursorState, updateMyPresence]);
+  }, [cursorState, updateMyPresence, setCursorState]);
 
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      e.preventDefault();
-      if (cursor == null || cursorState.mode !== CursorMode.ReactionSelector) {
-        const x = e.clientX - e.currentTarget.getBoundingClientRect().x;
-        const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
-        updateMyPresence({ cursor: { x, y } });
-      }
-    },
-    [cursorState, updateMyPresence],
-  );
+  const handlePointerMove = (e: React.PointerEvent) => {
+    e.preventDefault();
+    // if (cursor == null || cursorState.mode !== CursorMode.ReactionSelector) {
+    //   const x = e.clientX - e.currentTarget.getBoundingClientRect().x;
+    //   const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
+    //   updateMyPresence({ cursor: { x, y } });
+    // }
+    const x = e.clientX - e.currentTarget.getBoundingClientRect().x;
+    const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
+    updateMyPresence({ cursor: { x, y } });
+  };
 
-  const handlePointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      e.preventDefault();
-      updateMyPresence({ cursor: null });
-      // De esta manera no borramos el mensaje, solo lo ocultamos
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    e.preventDefault();
+    updateMyPresence({ cursor: null });
+    // De esta manera no borramos el mensaje, solo lo ocultamos
 
-      if (cursorState.mode === CursorMode.Reaction) {
-        setCursorState({ ...cursorState, isPressed: false });
-      }
-    },
-    [cursorState, updateMyPresence],
-  );
-
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      const x = e.clientX - e.currentTarget.getBoundingClientRect().x;
-      const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
-      updateMyPresence({ cursor: { x, y } });
-
-      if (cursorState.mode === CursorMode.Reaction) {
-        setCursorState({ ...cursorState, isPressed: true });
-      }
-      if (cursorState.mode === CursorMode.Chat) {
-        updateMyPresence({ message: "" });
-        setCursorState({ mode: CursorMode.Hidden });
-      }
-      if (cursorState.mode === CursorMode.ReactionSelector) {
-        console.log("Cerraste selector de reaccion con clic");
-        setCursorState({ mode: CursorMode.Hidden });
-      }
-    },
-    [cursorState, updateMyPresence],
-  );
-
-  const handlePointerUp = useCallback(() => {
     if (cursorState.mode === CursorMode.Reaction) {
       setCursorState({ ...cursorState, isPressed: false });
     }
-  }, [cursorState]);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const x = e.clientX - e.currentTarget.getBoundingClientRect().x;
+    const y = e.clientY - e.currentTarget.getBoundingClientRect().y;
+    updateMyPresence({ cursor: { x, y } });
+
+    if (cursorState.mode === CursorMode.Reaction) {
+      setCursorState({ ...cursorState, isPressed: true });
+    }
+    if (cursorState.mode === CursorMode.Chat) {
+      updateMyPresence({ message: "" });
+      setCursorState({ mode: CursorMode.Hidden });
+    }
+    if (cursorState.mode === CursorMode.ReactionSelector) {
+      console.log("Cerraste selector de reaccion con clic");
+      setCursorState({ mode: CursorMode.Hidden });
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (cursorState.mode === CursorMode.Reaction) {
+      setCursorState({ ...cursorState, isPressed: false });
+    }
+  };
 
   return (
     <div
-      className="relative flex h-svh w-full items-center justify-center overflow-hidden"
+      id="canvas"
+      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-border/70"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}

@@ -1,12 +1,13 @@
-import Link from "next/link";
+import HeroSection from "@/components/home/HeroSection";
+import Templates from "@/components/home/Templates";
+import { Separator } from "@/components/ui/separator";
 
 export default function Page() {
   return (
-    <div>
-      <span>main content</span>
-      <Link href={"/canvas"} className="ml-4 text-yellow-200">
-        Canvas
-      </Link>
+    <div className="flex w-full flex-col gap-8 sm:gap-4">
+      <HeroSection />
+      {/* <Separator /> */}
+      <Templates />
     </div>
   );
 }

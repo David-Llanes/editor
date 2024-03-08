@@ -14,6 +14,7 @@ export default function Cursor({ connectionId }: { connectionId: number }) {
     <div
       className="pointer-events-none absolute left-0 top-0"
       style={{
+        // transition: "transform 0.2s ease-out",
         transform: `translateX(${cursor?.x}px) translateY(${cursor?.y}px)`,
       }}
     >

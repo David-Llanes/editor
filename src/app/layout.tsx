@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Urbanist, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { DevTools } from "@/components/DevTools";
 
 const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" });
 const work_sans = Work_Sans({
@@ -11,8 +12,8 @@ const work_sans = Work_Sans({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | FigmaClone",
-    default: "Figma Clone",
+    template: "%s | Grafiko",
+    default: "Grafiko",
   },
   description: "A platform where you can customize your own product.",
 };
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${work_sans.variable} ${urbanist.variable} `}>
+    <html lang="en" className={`${work_sans.variable} ${urbanist.variable}`}>
       <body className={`${urbanist.className} bg-background text-foreground`}>
         <ThemeProvider
           attribute="class"
@@ -31,6 +32,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
+          <DevTools />
           {children}
         </ThemeProvider>
       </body>

@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Avatar } from "./Avatar";
-import { useOthers, useSelf } from "@root/liveblocks.config";
+import { useOthers, useOthersMapped, useSelf } from "@root/liveblocks.config";
 import { generateRandomName } from "@/lib/utils";
 
 export default function LiveAvatars() {
-  const users = useOthers();
-  const currentUser = useSelf();
+  const users = useOthersMapped((other) => other.info);
+  const currentUser = useSelf((me) => me.connectionId);
   const hasMoreUsers = users.length > 3;
   // console.log(currentUser);
 
@@ -13,7 +13,7 @@ export default function LiveAvatars() {
     return (
       <div className="flex max-h-10 w-full select-none items-center justify-center">
         <div className="flex h-full pl-3">
-          {users.slice(0, 3).map(({ connectionId, info }) => {
+          {users.slice(0, 3).map(([connectionId, info]) => {
             return <Avatar key={connectionId} name={generateRandomName()} />;
           })}
 
@@ -35,3 +35,5 @@ export default function LiveAvatars() {
 
   return memoizedUsers;
 }
+
+// Antes de mis cambios estaba como en el video de youtube.

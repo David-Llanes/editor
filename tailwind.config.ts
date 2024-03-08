@@ -14,7 +14,7 @@ const config = {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1440px",
       },
     },
     extend: {
@@ -75,6 +75,10 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      gridTemplateColumns: {
+        autofit: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+        autofill: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
       },
     },
   },

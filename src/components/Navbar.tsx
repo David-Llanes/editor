@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import LiveAvatars from "./avatars/LiveAvatars";
 import { memo } from "react";
 import Image from "next/image";
-import { NavbarProps } from "@/types/type";
+import { Options } from "./editor/Tools";
 
 // { activeElement }: NavbarProps
 function Navbar() {
@@ -16,7 +16,12 @@ function Navbar() {
   return (
     <nav className="bg-border shadow-md">
       <div className="mx-auto flex h-16 max-w-7xl select-none items-center justify-between gap-4 p-2 text-foreground sm:px-6 lg:px-8">
-        <Image src="/assets/logo.svg" alt="Logo" width={58} height={20} />
+        <div>
+          <Image src="/assets/logo.svg" alt="Logo" width={58} height={20} />
+        </div>
+        <div>
+          <Options />
+        </div>
         <div className="flex items-center justify-center gap-2">
           <LiveAvatars />
           <ThemeToggle />
