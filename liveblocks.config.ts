@@ -1,5 +1,5 @@
 import { Reaction } from "@/types/type";
-import { Json, createClient } from "@liveblocks/client";
+import { Json, LiveMap, createClient } from "@liveblocks/client";
 import { createRoomContext, createLiveblocksContext } from "@liveblocks/react";
 
 export const client = createClient({
@@ -61,8 +61,7 @@ type Presence = {
 // LiveList, LiveMap, LiveObject instances, for which updates are
 // automatically persisted and synced to all connected clients.
 type Storage = {
-  // author: LiveObject<{ firstName: string, lastName: string }>,
-  // ...
+  canvasObjects: LiveMap<string, Json>;
 };
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as

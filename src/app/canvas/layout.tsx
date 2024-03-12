@@ -6,12 +6,14 @@ export default function CanvasLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <CursorStateProvider
-      cursorState={{
-        mode: CursorMode.Hidden,
-      }}
-    >
-      <Room>{children}</Room>
-    </CursorStateProvider>
+    <div className="h-screen">
+      <CursorStateProvider
+        cursorState={{
+          mode: CursorMode.Hidden,
+        }}
+      >
+        <Room>{children}</Room>
+      </CursorStateProvider>
+    </div>
   );
 }

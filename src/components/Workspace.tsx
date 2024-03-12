@@ -5,18 +5,26 @@ import LiveChat from "./cursor/LiveChat";
 import LiveContainer from "./LiveContainer";
 import ReactionSelector from "./reaction/ReactionSelector";
 import LiveReactions from "./reaction/LiveReactions";
-import CursorStateXD from "./CursorStateXD";
-import Canvas from "./editor/Canvas";
+import LiveEditor from "./editor/LiveEditor";
+import { useRef } from "react";
+import EditorStateProvider from "@/hooks/useEditorState";
+
+type Props = {
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+};
 
 export default function Workspace() {
+  const isInteracting = useRef(false);
+
   return (
     <LiveContainer>
-      <Canvas />
+      <EditorStateProvider>
+        <LiveEditor />
+      </EditorStateProvider>
       <ReactionSelector />
       <LiveReactions />
       <LiveChat />
       <LiveCursors />
-      {/* <CursorStateXD /> */}
     </LiveContainer>
   );
 }

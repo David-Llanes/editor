@@ -1,5 +1,5 @@
 import { useMyPresence, useUpdateMyPresence } from "@root/liveblocks.config";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { CursorMode } from "@/types/type";
 import { useCursorState } from "@/store/Provider";
 
@@ -13,6 +13,7 @@ export default function LiveContainer({ children }: Props) {
     state.cursorState,
     state.setCursosState,
   ]);
+
   // const [{ cursor }, updateMyPresence] = useMyPresence();
   const updateMyPresence = useUpdateMyPresence();
 
@@ -91,8 +92,7 @@ export default function LiveContainer({ children }: Props) {
 
   return (
     <div
-      id="canvas"
-      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-border/70"
+      className="relative h-full w-full overflow-hidden"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}
@@ -102,3 +102,5 @@ export default function LiveContainer({ children }: Props) {
     </div>
   );
 }
+
+//id="canvas"

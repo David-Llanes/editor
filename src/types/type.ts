@@ -9,6 +9,27 @@ export enum CursorMode {
   Reaction,
 }
 
+export enum ActiveTool {
+  Select = "select",
+  Move = "move",
+  Text = "text",
+  Comments = "comments",
+  Pen = "pen",
+  Rectangle = "rectangle",
+  Circle = "circle",
+  Triangle = "triangle",
+  Line = "line",
+  Image = "image",
+}
+
+export enum CanvasActions {
+  Undo = "undo",
+  Redo = "redo",
+  Reset = "reset",
+  Delete = "delete",
+  Save = "save",
+}
+
 export type CursorHidden = {
   mode: CursorMode.Hidden;
 };
@@ -160,7 +181,7 @@ export type CanvasMouseUp = {
   activeObjectRef: React.MutableRefObject<fabric.Object | null>;
   selectedShapeRef: any;
   syncShapeInStorage: (shape: fabric.Object) => void;
-  setActiveElement: any;
+  setActiveTool: any;
 };
 
 export type CanvasObjectModified = {

@@ -2,6 +2,7 @@ import { fabric } from "fabric";
 import { v4 as uuid4 } from "uuid";
 
 import {
+  ActiveTool,
   CanvasMouseDown,
   CanvasMouseMove,
   CanvasMouseUp,
@@ -25,7 +26,7 @@ function renderIcon(icon: HTMLImageElement) {
     var size = 20;
     ctx.save();
     ctx.translate(left, top);
-    ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle));
+    ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle as number));
     ctx.drawImage(icon, -size / 2, -size / 2, size, size);
     ctx.restore();
   };
@@ -98,7 +99,7 @@ export const handleCanvasMouseDown = ({
   const target = canvas.findTarget(options.e, false);
 
   // set canvas drawing mode to false
-  canvas.isDrawingMode = false;
+  // canvas.isDrawingMode = false;
 
   // if selected shape is freeform, set drawing mode to true and return
   if (selectedShapeRef.current === "freeform") {
@@ -144,7 +145,7 @@ export const handleCanvasMouseDown = ({
 };
 
 // handle mouse move event on canvas to draw shapes with different dimensions
-export const handleCanvaseMouseMove = ({
+export const handleCanvasMouseMove = ({
   options,
   canvas,
   isDrawing,
@@ -219,7 +220,7 @@ export const handleCanvasMouseUp = ({
   activeObjectRef,
   selectedShapeRef,
   syncShapeInStorage,
-  setActiveElement,
+  setActiveTool,
 }: CanvasMouseUp) => {
   isDrawing.current = false;
   if (selectedShapeRef.current === "freeform") return;
@@ -232,11 +233,11 @@ export const handleCanvasMouseUp = ({
   activeObjectRef.current = null;
   selectedShapeRef.current = null;
 
-  // if canvas is not in drawing mode, set active element to default nav element after 700ms
+  // if canvas is not in drawing mode, set active element to default nav element after
   if (!canvas.isDrawingMode) {
     setTimeout(() => {
-      setActiveElement(defaultNavElement);
-    }, 700);
+      setActiveTool(ActiveTool.Select);
+    }, 100);
   }
 };
 
@@ -428,11 +429,16 @@ export const handleResize = ({ canvas }: { canvas: fabric.Canvas | null }) => {
   if (!canvasElement) return;
 
   if (!canvas) return;
+  console.log(
+    `width: ${canvasElement.clientWidth}, height: ${canvasElement.clientHeight}`,
+  );
 
-  canvas.setDimensions({
-    width: canvasElement.clientWidth,
-    height: canvasElement.clientHeight,
-  });
+  if (canvas) {
+    canvas.setDimensions({
+      width: canvasElement.clientWidth,
+      height: canvasElement.clientHeight,
+    });
+  }
 };
 
 // zoom canvas on mouse scroll
