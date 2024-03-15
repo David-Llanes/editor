@@ -1,14 +1,14 @@
 import { useMyPresence, useUpdateMyPresence } from "@root/liveblocks.config";
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { CursorMode } from "@/types/type";
 import { useCursorState } from "@/store/Provider";
 
 type Props = {
+  isInteractingRef: MutableRefObject<boolean>;
   children: React.ReactNode;
-  // canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 
-export default function LiveContainer({ children }: Props) {
+export default function LiveContainer({ isInteractingRef, children }: Props) {
   const [cursorState, setCursorState] = useCursorState()((state) => [
     state.cursorState,
     state.setCursosState,

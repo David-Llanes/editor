@@ -1,26 +1,65 @@
 import { ActiveTool } from "@/types/type";
+
 import {
   Dispatch,
   MutableRefObject,
-  RefObject,
   SetStateAction,
   createContext,
   useContext,
-  useMemo,
   useRef,
   useState,
 } from "react";
 
+export enum ShapeToDraw {
+  rectangle = "rect",
+  circle = "circle",
+  triangle = "triangle",
+  text = "text",
+  line = "line",
+  image = "image",
+}
+
+export enum Modes {
+  isDrawing = "isDrawing",
+  isEditing = "isEditing",
+  isFreeForm = "isFreeForm",
+  isSelecting = "isSelecting",
+  isMoving = "isMoving",
+  // isInteracting = "isInteracting",
+}
+
+export enum Tools {
+  select = "select",
+  move = "move",
+  text = "text",
+  comments = "comments",
+  pen = "pen",
+  rect = "rect",
+  circle = "circle",
+  triangle = "triangle",
+  line = "line",
+  image = "image",
+}
+
+export type ActiveToolType = string | null;
+export type SetActiveToolType = Dispatch<SetStateAction<string>>;
+export type ModeType = MutableRefObject<Modes>;
+export type CanvasType = MutableRefObject<HTMLCanvasElement | null>;
+export type FabricCanvasType = MutableRefObject<fabric.Canvas | null>;
+export type NewShapeType = MutableRefObject<fabric.Object | null>;
+// export type ShapeToDrawType = MutableRefObject<string | null>;
+export type ShapeToDrawType = MutableRefObject<ShapeToDraw | null>;
+export type ActiveObjectType = MutableRefObject<fabric.Object | null>;
+
 type State = {
-  activeTool: string;
-  setActiveTool: Dispatch<SetStateAction<string>>;
-  canvasRef: RefObject<HTMLCanvasElement>;
-  fabricRef: MutableRefObject<fabric.Canvas | null>;
-  shapeRef: React.MutableRefObject<fabric.Object | null>;
-  selectedShapeRef: MutableRefObject<string | null>;
-  activeObjectRef: React.MutableRefObject<fabric.Object | null>;
-  isEditingRef: MutableRefObject<boolean>;
-  isDrawing: MutableRefObject<boolean>;
+  activeTool: ActiveToolType;
+  setActiveTool: SetActiveToolType;
+  canvasRef: CanvasType;
+  fabricRef: FabricCanvasType;
+  newShapeRef: NewShapeType;
+  shapeToDrawRef: ShapeToDrawType;
+  activeObjectRef: ActiveObjectType;
+  modeRef: ModeType;
 };
 
 const editorContext = createContext<State | null>(null);
@@ -31,29 +70,24 @@ export default function EditorStateProvider({
   children: React.ReactNode;
 }) {
   const [activeTool, setActiveTool] = useState<string>(ActiveTool.Select);
+  const modeRef = useRef(Modes.isSelecting);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<fabric.Canvas | null>(null);
-  const isDrawing = useRef(false);
-  const shapeRef = useRef<fabric.Object | null>(null);
-  const selectedShapeRef = useRef<string | null>(null);
+  const newShapeRef = useRef<fabric.Object | null>(null);
+  const shapeToDrawRef = useRef<ShapeToDraw | null>(null);
   const activeObjectRef = useRef<fabric.Object | null>(null);
-  const isEditingRef = useRef(false);
   return (
     <editorContext.Provider
-      value={useMemo(
-        () => ({
-          activeTool,
-          setActiveTool,
-          canvasRef,
-          fabricRef,
-          isDrawing,
-          shapeRef,
-          selectedShapeRef,
-          activeObjectRef,
-          isEditingRef,
-        }),
-        [activeTool],
-      )}
+      value={{
+        activeTool,
+        setActiveTool,
+        canvasRef,
+        fabricRef,
+        modeRef,
+        newShapeRef,
+        shapeToDrawRef,
+        activeObjectRef,
+      }}
     >
       {children}
     </editorContext.Provider>

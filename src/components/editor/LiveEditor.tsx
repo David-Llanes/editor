@@ -9,37 +9,40 @@ import {
   initializeFabric,
   renderCanvas,
   handleCanvasObjectModified,
+  handlePathCreated,
 } from "@/lib/canvas";
-import { ActiveElement, ActiveTool, CanvasActions } from "@/types/type";
-import Navbar from "@/components/editor/Navbar";
 import {
   useMutation,
   useRedo,
   useStorage,
   useUndo,
 } from "@root/liveblocks.config";
-import { defaultNavElement } from "@/constants";
+
 import { handleDelete, handleKeyDown } from "@/lib/key-events";
-import Herramientas2 from "./Toolbar";
+
 import Overlay from "./Overlay";
 import Toolbar from "./Toolbar";
 import { useEditorState } from "@/hooks/useEditorState";
+import useDeleteObject from "@/hooks/useDeleteObject";
+import OverlayOptions from "./OverlayOptions";
 
 export default function LiveEditor() {
   const undo = useUndo();
   const redo = useRedo();
+  const deleteObject = useDeleteObject();
+
   const {
     activeTool,
     setActiveTool,
-    fabricRef,
     canvasRef,
-    shapeRef,
-    selectedShapeRef,
+    fabricRef,
+    modeRef,
+    newShapeRef,
+    shapeToDrawRef,
     activeObjectRef,
-    isDrawing,
-    isEditingRef,
   } = useEditorState();
 
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const canvasObjects = useStorage((root) => root.canvasObjects);
 
   const syncShapeInStorage = useMutation(({ storage }, object) => {
@@ -54,75 +57,30 @@ export default function LiveEditor() {
     canvasObjects.set(objectId, shapeData);
   }, []);
 
-  // const [activeElement, setActiveElement] = useState<ActiveElement>({
-  //   name: "",
-  //   value: "",
-  //   icon: "",
-  // });
-
-  const deleteAllShapes = useMutation(({ storage }) => {
-    const canvasObjects = storage.get("canvasObjects");
-
-    if (!canvasObjects || canvasObjects.size === 0) return true;
-
-    for (const [key, value] of canvasObjects.entries() as any) {
-      canvasObjects.delete(key);
-    }
-
-    return canvasObjects.size === 0;
-  }, []);
-
-  const deleteShapeFromStorage = useMutation(({ storage }, objectId) => {
-    const canvasObjects = storage.get("canvasObjects");
-    canvasObjects.delete(objectId);
-  }, []);
-
-  const handleAction = (action: string) => {
-    setActiveTool(action);
-
-    switch (action) {
-      case CanvasActions.Undo:
-        undo();
-        break;
-      case CanvasActions.Redo:
-        redo();
-        break;
-      case CanvasActions.Reset:
-        deleteAllShapes();
-        fabricRef.current?.clear();
-        setActiveTool(ActiveTool.Select);
-        break;
-      case CanvasActions.Delete:
-        handleDelete(
-          fabricRef.current as fabric.Canvas,
-          deleteShapeFromStorage,
-        );
-        break;
-    }
-
-    // selectedShapeRef.current = element?.value as string;
-  };
+  const deleteShapeFromStorage = deleteObject;
 
   useEffect(() => {
     // initialize the fabric canvas
-    const canvas = initializeFabric({
+    const fabricCanvas = initializeFabric({
       canvasRef,
       fabricRef,
     });
 
-    canvas.on("mouse:down", (options) => {
+    fabricCanvas.on("mouse:down", (options) => {
       handleCanvasMouseDown({
         options,
-        canvas,
+        fabricCanvas,
         selectedShapeRef,
+        activeObjectRef,
         isDrawing,
         shapeRef,
+        isMoving,
       });
     });
 
-    canvas.on("mouse:up", (options) => {
+    fabricCanvas.on("mouse:up", (options) => {
       handleCanvasMouseUp({
-        canvas,
+        fabricCanvas,
         selectedShapeRef,
         isDrawing,
         shapeRef,
@@ -133,10 +91,10 @@ export default function LiveEditor() {
     });
 
     // Cambiar el nombre de la funcion
-    canvas.on("mouse:move", (options) => {
+    fabricCanvas.on("mouse:move", (options) => {
       handleCanvasMouseMove({
         options,
-        canvas,
+        fabricCanvas,
         selectedShapeRef,
         isDrawing,
         shapeRef,
@@ -144,11 +102,25 @@ export default function LiveEditor() {
       });
     });
 
-    canvas.on("object:modified", (options) => {
+    fabricCanvas.on("object:modified", (options) => {
       handleCanvasObjectModified({
         options,
         syncShapeInStorage,
       });
+    });
+
+    fabricCanvas.on("mouse:wheel", function (options) {
+      var delta = options.e.deltaY;
+      var zoom = fabricCanvas.getZoom();
+      zoom *= 0.999 ** delta;
+      if (zoom > 10) zoom = 10;
+      if (zoom < 0.25) zoom = 0.25;
+      fabricCanvas.zoomToPoint(
+        { x: options.e.offsetX, y: options.e.offsetY },
+        zoom,
+      );
+      options.e.preventDefault();
+      options.e.stopPropagation();
     });
 
     window.addEventListener("resize", () => {
@@ -169,6 +141,10 @@ export default function LiveEditor() {
       });
     });
 
+    canvas.on("path:created", (options) => {
+      handlePathCreated({ options, syncShapeInStorage });
+    });
+
     return () => {
       canvas.dispose();
     };
@@ -182,14 +158,18 @@ export default function LiveEditor() {
     <div className="relative flex h-full flex-col">
       {/* Barra de herramientas */}
       <div className="shrink-0">
-        <Toolbar />
+        <Toolbar
+          imageInputRef={imageInputRef}
+          syncShapeInStorage={syncShapeInStorage}
+        />
       </div>
 
       <div
         id="canvas"
         className="relative flex-1 select-none bg-muted-foreground"
       >
-        <Overlay handleAction={handleAction} />
+        <Overlay />
+        {/* <OverlayOptions /> */}
         <canvas ref={canvasRef} />
       </div>
     </div>

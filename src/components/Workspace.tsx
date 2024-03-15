@@ -14,10 +14,10 @@ type Props = {
 };
 
 export default function Workspace() {
-  const isInteracting = useRef(false);
+  const isInteractingRef = useRef(false);
 
   return (
-    <LiveContainer>
+    <LiveContainer isInteractingRef={isInteractingRef}>
       <EditorStateProvider>
         <LiveEditor />
       </EditorStateProvider>

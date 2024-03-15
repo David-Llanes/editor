@@ -11,7 +11,7 @@ import {
 
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useState } from "react";
+import { RefObject, useState } from "react";
 import {
   ChevronDown,
   Circle,
@@ -27,12 +27,13 @@ import {
   Image as Img,
 } from "lucide-react";
 import { useEditorState } from "@/hooks/useEditorState";
+import { handleImageUpload } from "@/lib/shapes";
 
 const shapeElements = [
   {
     icon: <Square />,
     name: "Rectangle",
-    value: "rectangle",
+    value: "rect",
   },
   {
     icon: <Circle />,
@@ -49,11 +50,6 @@ const shapeElements = [
     name: "Line",
     value: "line",
   },
-  {
-    icon: <Img />,
-    name: "Image",
-    value: "image",
-  },
 ];
 
 const toolElements = [
@@ -62,7 +58,6 @@ const toolElements = [
     name: "Select",
     value: "select",
   },
-  // { icon: <Scaling />, name: "Scale", value: "scale" },
   { icon: <Move />, name: "Move", value: "move" },
   {
     icon: <Shapes />,
@@ -74,12 +69,17 @@ const toolElements = [
     name: "Text",
     value: "text",
   },
-  { icon: <PenTool />, name: "Pen", value: "freeform" },
   {
-    icon: <MessageSquareMore />,
-    name: "Comments",
-    value: "comments",
+    icon: <Img />,
+    name: "Image",
+    value: "image",
   },
+  { icon: <PenTool />, name: "Pen", value: "freeform" },
+  // {
+  //   icon: <MessageSquareMore />,
+  //   name: "Comments",
+  //   value: "comments",
+  // },
 ];
 
 type ShapeProps = {
@@ -88,8 +88,21 @@ type ShapeProps = {
   value: string;
 };
 
-export default function Toolbar() {
-  const { activeTool, setActiveTool, selectedShapeRef } = useEditorState();
+export default function Toolbar({
+  imageInputRef,
+  syncShapeInStorage,
+}: {
+  imageInputRef: RefObject<HTMLInputElement>;
+  syncShapeInStorage: any;
+}) {
+  const {
+    activeTool,
+    setActiveTool,
+    selectedShapeRef,
+    isDrawing,
+    fabricRef,
+    shapeRef,
+  } = useEditorState();
   const [activeShape, setActiveShape] = useState<ShapeProps | null>(null);
 
   return (
@@ -165,6 +178,14 @@ export default function Toolbar() {
                 htmlFor={tool.value}
                 className="cursor-pointer rounded-md p-2 text-foreground transition-colors  peer-hover:bg-accent peer-hover:text-muted-foreground peer-aria-checked:bg-border hover:peer-aria-checked:text-foreground"
                 onClick={() => {
+                  if (tool.value === "image") {
+                    imageInputRef.current?.click();
+                    isDrawing.current = false;
+
+                    if (fabricRef.current) {
+                      fabricRef.current.isDrawingMode = false;
+                    }
+                  }
                   console.log(tool.value);
                   selectedShapeRef.current = tool.value as string;
                   setActiveTool(tool.value as string);
@@ -176,6 +197,22 @@ export default function Toolbar() {
           );
         }
       })}
+      <input
+        type="file"
+        className="hidden"
+        ref={imageInputRef}
+        accept="image/*"
+        onChange={(e) => {
+          e.stopPropagation();
+          handleImageUpload({
+            //@ts-ignore
+            file: e.target.files[0],
+            canvas: fabricRef as any,
+            shapeRef,
+            syncShapeInStorage,
+          });
+        }}
+      />
     </RadioGroup>
   );
 }

@@ -161,6 +161,8 @@ export type CanvasMouseDown = {
   options: fabric.IEvent;
   canvas: fabric.Canvas;
   selectedShapeRef: any;
+  isMoving: React.MutableRefObject<boolean>;
+  activeObjectRef: React.MutableRefObject<fabric.Object | null>;
   isDrawing: React.MutableRefObject<boolean>;
   shapeRef: React.MutableRefObject<fabric.Object | null>;
 };

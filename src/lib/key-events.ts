@@ -5,9 +5,10 @@ import { CustomFabricObject } from "@/types/type";
 
 export const handleCopy = (canvas: fabric.Canvas) => {
   const activeObjects = canvas.getActiveObjects();
+  console.log(activeObjects);
   if (activeObjects.length > 0) {
     // Serialize the selected objects
-    const serializedObjects = activeObjects.map((obj) => obj.toObject());
+    const serializedObjects = activeObjects.map((obj) => obj.toJSON());
     // Store the serialized objects in the clipboard
     localStorage.setItem("clipboard", JSON.stringify(serializedObjects));
   }
@@ -30,11 +31,13 @@ export const handlePaste = (
   if (clipboardData) {
     try {
       const parsedObjects = JSON.parse(clipboardData);
+      console.log(parsedObjects);
       parsedObjects.forEach((objData: fabric.Object) => {
         // convert the plain javascript objects retrieved from localStorage into fabricjs objects (deserialization)
         fabric.util.enlivenObjects(
           [objData],
           (enlivenedObjects: fabric.Object[]) => {
+            console.log(enlivenedObjects);
             enlivenedObjects.forEach((enlivenedObj) => {
               // Offset the pasted objects to avoid overlap with existing objects
               enlivenedObj.set({

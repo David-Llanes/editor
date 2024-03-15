@@ -12,7 +12,6 @@ import {
   CanvasSelectionCreated,
   RenderCanvas,
 } from "@/types/type";
-import { defaultNavElement } from "@/constants";
 import { createSpecificShape } from "./shapes";
 
 function renderIcon(icon: HTMLImageElement) {
@@ -33,6 +32,70 @@ function renderIcon(icon: HTMLImageElement) {
 }
 
 // initialize fabric canvas
+// export const initializeFabricWithTemplate = ({
+//   fabricRef,
+//   canvasRef,
+//   templateRef,
+//   syncShapeInStorage,
+// }: {
+//   fabricRef: React.MutableRefObject<fabric.Canvas | null>;
+//   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
+//   templateRef: React.MutableRefObject<fabric.Object | null>;
+//   syncShapeInStorage: (shape: fabric.Object) => void;
+// }) => {
+//   // get element container
+//   const element = document.getElementById("canvas");
+
+//   // create fabric canvas
+//   const canvas = new fabric.Canvas(canvasRef.current, {
+//     width: element?.clientWidth,
+//     height: element?.clientHeight,
+//   });
+
+//   //Modify the canvas for customizing the canvas
+//   canvas.selectionDashArray = [5, 5];
+//   canvas.selectionBorderColor = "#0094FF"; // Azul
+//   canvas.selectionColor = "#0094FF10"; // Azul con opacidad baja
+
+//   //Modificar los los controles
+//   console.log(fabric.Object.prototype.controls);
+
+//   fabric.Object.prototype.transparentCorners = false;
+//   fabric.Object.prototype.cornerColor = "#FFFFFF";
+//   fabric.Object.prototype.cornerStyle = "circle";
+//   fabric.Object.prototype.cornerStrokeColor = "#BBBBBB"; // Gris bajito
+//   fabric.Object.prototype.cornerSize = 12;
+//   fabric.Object.prototype.borderColor = "#0094FF"; // Azul
+//   fabric.Object.prototype.borderScaleFactor = 2;
+//   fabric.Object.prototype.hoverCursor = "default";
+
+//   const controls = fabric.Object.prototype.controls;
+//   controls.mtr = new fabric.Control({
+//     ...controls.mtr,
+//     cursorStyle: "move",
+//   });
+//   fabric.Object.prototype.controls = controls;
+
+//   fabric.Image.fromURL("../../../assets/mocks/casePNG.png", function (img) {
+//     img.scale(0.5).set({
+//       absolutePositioned: true,
+//       originX: "center",
+//       originY: "center",
+//     });
+//     // canvas.add(img);
+//     // console.log(img);
+//     templateRef.current = img;
+//     img.objectId = uuid4();
+//     syncShapeInStorage(img);
+//   });
+
+//   // set canvas reference to fabricRef so we can use it later anywhere outside canvas listener
+//   fabricRef.current = canvas;
+
+//   return canvas;
+// };
+
+// initialize fabric canvas
 export const initializeFabric = ({
   fabricRef,
   canvasRef,
@@ -49,7 +112,7 @@ export const initializeFabric = ({
     height: element?.clientHeight,
   });
 
-  //Modify the canvas for customizing the canvas
+  //Modify the canvas
   canvas.selectionDashArray = [5, 5];
   canvas.selectionBorderColor = "#0094FF"; // Azul
   canvas.selectionColor = "#0094FF10"; // Azul con opacidad baja
@@ -57,6 +120,7 @@ export const initializeFabric = ({
   //Modificar los los controles
   console.log(fabric.Object.prototype.controls);
 
+  // fabric.Object.prototype.originX = fabric.Object.prototype.originY = "center";
   fabric.Object.prototype.transparentCorners = false;
   fabric.Object.prototype.cornerColor = "#FFFFFF";
   fabric.Object.prototype.cornerStyle = "circle";
@@ -65,11 +129,17 @@ export const initializeFabric = ({
   fabric.Object.prototype.borderColor = "#0094FF"; // Azul
   fabric.Object.prototype.borderScaleFactor = 2;
   fabric.Object.prototype.hoverCursor = "default";
+  fabric.Object.prototype.padding = 0;
 
   const controls = fabric.Object.prototype.controls;
   controls.mtr = new fabric.Control({
     ...controls.mtr,
     cursorStyle: "move",
+    withConnection: false,
+    sizeX: 25,
+    sizeY: 25,
+    y: 0.5,
+    offsetY: 50,
   });
   fabric.Object.prototype.controls = controls;
 
@@ -84,11 +154,23 @@ export const handleCanvasMouseDown = ({
   options,
   canvas,
   selectedShapeRef,
+  activeObjectRef,
   isDrawing,
   shapeRef,
+  isMoving,
 }: CanvasMouseDown) => {
   // get pointer coordinates
   const pointer = canvas.getPointer(options.e);
+
+  // if selected shape is freeform, set drawing mode to true and return
+  if (selectedShapeRef.current === "freeform") {
+    isDrawing.current = true;
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.width = 5;
+    return;
+  }
+
+  canvas.isDrawingMode = false;
 
   /**
    * get target object i.e., the object that is clicked
@@ -101,26 +183,17 @@ export const handleCanvasMouseDown = ({
   // set canvas drawing mode to false
   // canvas.isDrawingMode = false;
 
-  // if selected shape is freeform, set drawing mode to true and return
-  if (selectedShapeRef.current === "freeform") {
-    isDrawing.current = true;
-    canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.width = 5;
-    return;
-  }
-
-  canvas.isDrawingMode = false;
-
   // if target is the selected shape or active selection, set isDrawing to false
-  if (
-    target &&
-    (target.type === selectedShapeRef.current ||
-      target.type === "activeSelection")
-  ) {
-    isDrawing.current = false;
+  if (target) {
+    activeObjectRef.current = target;
 
+    if (activeObjectRef.current) {
+      activeObjectRef.current.set({ fill: "red", stroke: "black" });
+    }
+    isDrawing.current = false;
     // set active object to target
     canvas.setActiveObject(target);
+    console.log(activeObjectRef.current);
 
     /**
      * setCoords() is used to update the controls of the object
@@ -140,6 +213,8 @@ export const handleCanvasMouseDown = ({
     if (shapeRef.current) {
       // add: http://fabricjs.com/docs/fabric.Canvas.html#add
       canvas.add(shapeRef.current);
+      // set active object to shapeRef
+      activeObjectRef.current = shapeRef.current;
     }
   }
 };
@@ -162,26 +237,31 @@ export const handleCanvasMouseMove = ({
   // get pointer coordinates
   const pointer = canvas.getPointer(options.e);
 
-  // depending on the selected shape, set the dimensions of the shape stored in shapeRef in previous step of handelCanvasMouseDown
+  // get w, h and r
+  const width = pointer.x - (shapeRef.current?.left || 0);
+  const height = pointer.y - (shapeRef.current?.top || 0);
+  const radius = Math.abs(pointer.x - (shapeRef.current?.left || 0)) / 2;
+
+  // depending on the selected shape, set the dimensions of the shape stored in shapeRef in previous step of handleCanvasMouseDown
   // calculate shape dimensions based on pointer coordinates
   switch (selectedShapeRef?.current) {
     case "rectangle":
       shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
+        width: width > 50 ? width : 50,
+        height: height > 50 ? height : 50,
       });
       break;
 
     case "circle":
       shapeRef.current.set({
-        radius: Math.abs(pointer.x - (shapeRef.current?.left || 0)) / 2,
+        radius: radius > 25 ? radius : 25,
       });
       break;
 
     case "triangle":
       shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
+        width: width > 50 ? width : 50,
+        height: height > 50 ? height : 50,
       });
       break;
 
@@ -192,11 +272,11 @@ export const handleCanvasMouseMove = ({
       });
       break;
 
-    case "image":
-      shapeRef.current?.set({
-        width: pointer.x - (shapeRef.current?.left || 0),
-        height: pointer.y - (shapeRef.current?.top || 0),
-      });
+    // case "image":
+    //   shapeRef.current?.set({
+    //     width: pointer.x - (shapeRef.current?.left || 0),
+    //     height: pointer.y - (shapeRef.current?.top || 0),
+    //   });
 
     default:
       break;
@@ -225,12 +305,16 @@ export const handleCanvasMouseUp = ({
   isDrawing.current = false;
   if (selectedShapeRef.current === "freeform") return;
 
+  // set as active the new created shape
+  // activeObjectRef.current = shapeRef.current;
+
   // sync shape in storage as drawing is stopped
   syncShapeInStorage(shapeRef.current);
 
-  // set everything to null
-  shapeRef.current = null;
+  // nothing is left to add, we already added the shape to the canvas
   activeObjectRef.current = null;
+  shapeRef.current = null;
+  // no shape is selected
   selectedShapeRef.current = null;
 
   // if canvas is not in drawing mode, set active element to default nav element after
@@ -402,6 +486,7 @@ export const renderCanvas = ({
         enlivenedObjects.forEach((enlivenedObj) => {
           // if element is active, keep it in active state so that it can be edited further
           if (activeObjectRef.current?.objectId === objectId) {
+            console.log(enlivenedObj);
             fabricRef.current?.setActiveObject(enlivenedObj);
           }
 
