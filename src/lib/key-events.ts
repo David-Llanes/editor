@@ -5,7 +5,7 @@ import { CustomFabricObject } from "@/types/type";
 
 export const handleCopy = (canvas: fabric.Canvas) => {
   const activeObjects = canvas.getActiveObjects();
-  console.log(activeObjects);
+  console.log("Se copiaron:", activeObjects);
   if (activeObjects.length > 0) {
     // Serialize the selected objects
     const serializedObjects = activeObjects.map((obj) => obj.toJSON());
@@ -13,7 +13,7 @@ export const handleCopy = (canvas: fabric.Canvas) => {
     localStorage.setItem("clipboard", JSON.stringify(serializedObjects));
   }
 
-  return activeObjects;
+  // return activeObjects;
 };
 
 export const handlePaste = (
@@ -41,16 +41,16 @@ export const handlePaste = (
             enlivenedObjects.forEach((enlivenedObj) => {
               // Offset the pasted objects to avoid overlap with existing objects
               enlivenedObj.set({
-                left: enlivenedObj.left || 0 + 20,
-                top: enlivenedObj.top || 0 + 20,
+                left: enlivenedObj.left! + 10,
+                top: enlivenedObj.top! + 10,
                 objectId: uuidv4(),
                 fill: "#aabbcc",
               } as CustomFabricObject<any>);
-
+              console.log("Se pegó:", enlivenedObj);
               canvas.add(enlivenedObj);
               syncShapeInStorage(enlivenedObj);
             });
-            canvas.renderAll();
+            // canvas.renderAll();
           },
           "fabric",
         );
@@ -96,29 +96,86 @@ export const handleKeyDown = ({
   syncShapeInStorage: (shape: fabric.Object) => void;
   deleteShapeFromStorage: (id: string) => void;
 }) => {
-  // Check if the key pressed is ctrl/cmd + c (copy)
-  if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 67) {
-    handleCopy(canvas);
+  console.log("tecla presionada", e.key);
+
+  // // Check if the key pressed is ctrl/cmd + c (copy)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 67) {
+  //   handleCopy(canvas);
+  // }
+
+  // // Check if the key pressed is ctrl/cmd + v (paste)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 86) {
+  //   handlePaste(canvas, syncShapeInStorage);
+  // }
+
+  // Si se presiona la tecla Del
+  if (e.key === "Delete") {
+    handleDelete(canvas, deleteShapeFromStorage);
   }
 
-  // Check if the key pressed is ctrl/cmd + v (paste)
-  if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 86) {
-    handlePaste(canvas, syncShapeInStorage);
+  // // check if the key pressed is ctrl/cmd + x (cut)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 88) {
+  //   handleCopy(canvas);
+  //   handleDelete(canvas, deleteShapeFromStorage);
+  // }
+
+  // check if the key pressed is ctrl/cmd + z (undo)
+  if ((e?.ctrlKey || e?.metaKey) && e.key === "z") {
+    undo();
   }
+
+  // check if the key pressed is ctrl/cmd + y (redo)
+  if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 89) {
+    redo();
+  }
+
+  if (e.keyCode === 191 && !e.shiftKey) {
+    e.preventDefault();
+  }
+};
+
+// create a handleKeyDown function that listen to different keydown events
+export const handleKeyUp = ({
+  e,
+  canvas,
+  undo,
+  redo,
+  syncShapeInStorage,
+  deleteShapeFromStorage,
+}: {
+  e: KeyboardEvent;
+  canvas: fabric.Canvas | any;
+  undo: () => void;
+  redo: () => void;
+  syncShapeInStorage: (shape: fabric.Object) => void;
+  deleteShapeFromStorage: (id: string) => void;
+}) => {
+  console.log("tecla presionada", e.key);
+  // e.preventDefault();
+  // e.stopPropagation();
+  // // Check if the key pressed is ctrl/cmd + c (copy)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 67) {
+  //   handleCopy(canvas);
+  // }
+
+  // // Check if the key pressed is ctrl/cmd + v (paste)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 86) {
+  //   handlePaste(canvas, syncShapeInStorage);
+  // }
 
   // Check if the key pressed is delete/backspace (delete)
   if (e.keyCode === 8 || e.keyCode === 46) {
     handleDelete(canvas, deleteShapeFromStorage);
   }
 
-  // check if the key pressed is ctrl/cmd + x (cut)
-  if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 88) {
-    handleCopy(canvas);
-    handleDelete(canvas, deleteShapeFromStorage);
-  }
+  // // check if the key pressed is ctrl/cmd + x (cut)
+  // if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 88) {
+  //   handleCopy(canvas);
+  //   handleDelete(canvas, deleteShapeFromStorage);
+  // }
 
   // check if the key pressed is ctrl/cmd + z (undo)
-  if ((e?.ctrlKey || e?.metaKey) && e.keyCode === 90) {
+  if ((e?.ctrlKey || e?.metaKey) && e.key === "z") {
     undo();
   }
 

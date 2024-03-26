@@ -10,14 +10,13 @@ import {
   useState,
 } from "react";
 
-export enum ShapeToDraw {
-  rectangle = "rect",
-  circle = "circle",
-  triangle = "triangle",
-  text = "text",
-  line = "line",
-  image = "image",
-}
+export type ShapeToDraw =
+  | "rect"
+  | "circle"
+  | "triangle"
+  | "text"
+  | "line"
+  | "image";
 
 export enum Modes {
   isDrawing = "isDrawing",
@@ -33,7 +32,7 @@ export enum Tools {
   move = "move",
   text = "text",
   comments = "comments",
-  pen = "pen",
+  freeform = "freeform",
   rect = "rect",
   circle = "circle",
   triangle = "triangle",
@@ -41,13 +40,24 @@ export enum Tools {
   image = "image",
 }
 
+export type Herramientas =
+  | "select"
+  | "move"
+  | "text"
+  | "comments"
+  | "freeform"
+  | "rect"
+  | "circle"
+  | "triangle"
+  | "line"
+  | "image";
+
 export type ActiveToolType = string | null;
 export type SetActiveToolType = Dispatch<SetStateAction<string>>;
 export type ModeType = MutableRefObject<Modes>;
 export type CanvasType = MutableRefObject<HTMLCanvasElement | null>;
 export type FabricCanvasType = MutableRefObject<fabric.Canvas | null>;
 export type NewShapeType = MutableRefObject<fabric.Object | null>;
-// export type ShapeToDrawType = MutableRefObject<string | null>;
 export type ShapeToDrawType = MutableRefObject<ShapeToDraw | null>;
 export type ActiveObjectType = MutableRefObject<fabric.Object | null>;
 

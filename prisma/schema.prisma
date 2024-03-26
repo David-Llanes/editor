@@ -1,0 +1,65 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define el modelo del board
+model Board {
+  Id_Board             String   @id @default(uuid())
+  Titulo               String
+  Thumbnail_Img        String   @db.Text
+  Plantilla            Plantilla @relation(fields: [Id_Plantilla], references: [Id_Plantilla])
+  Id_Plantilla         Int
+  Usuario              Usuario   @relation(fields: [Id_Usuario], references: [Id_Usuario])
+  Id_Usuario           Int
+  Diseño               Diseño    @relation(fields: [Id_Diseño], references: [Id_Diseño])
+  Id_Diseño            Int
+  
+  @@index([Id_Plantilla], name: "PlantillaIndex")
+  @@index([Id_Usuario], name: "UsuarioIndex")
+  @@index([Id_Diseño], name: "DiseñoIndex")
+}
+
+// Define el modelo de usuario
+model Usuario {
+  Id_Usuario      Int       @id @default(autoincrement())
+  nombre          String
+  Correo          String    @unique
+  Clave           String
+  Tel             String    @unique
+  Diseños         Diseño[]  // Relación uno a muchos con Diseño
+
+  Creado_en       DateTime  @default(now())
+  Actualizado_en  DateTime  @updatedAt
+}
+
+// Define el modelo de diseño
+model Diseño {
+  Id_Diseño             Int      @id @default(autoincrement())
+  ObjetosSerialziados   String
+  Creado_en       DateTime  @default(now())
+  Actualizado_en  DateTime  @updatedAt
+}
+
+
+// Define el modelo de plantilla
+model Plantilla {
+  Id_Plantilla          Int      @id @default(autoincrement())
+  NombrePlantilla       String
+  Plantilla             String   @db.Text
+  Categoria             Categoria @relation(fields: [Id_Categoria], references: [Id_Categoria])
+  Id_Categoria          Int
+}
+
+// Define el modelo de categoria
+model Categoria {
+  Id_Categoria      Int       @id @default(autoincrement())
+  NombreCategoria   String
+  Descripcion       String
+  Creado_en         DateTime  @default(now())
+}

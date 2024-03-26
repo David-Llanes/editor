@@ -2,11 +2,13 @@ import { fabric } from "fabric";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  ActiveTool,
   CustomFabricObject,
   ElementDirection,
   ImageUpload,
   ModifyShape,
 } from "@/types/type";
+import { Modes, ShapeToDraw, ShapeToDrawType } from "@/hooks/useEditorState";
 
 const width = 50;
 const height = 50;
@@ -47,14 +49,11 @@ export const createCircle = (pointer: PointerEvent) => {
 };
 
 export const createLine = (pointer: PointerEvent) => {
-  return new fabric.Line(
-    [pointer.x, pointer.y, pointer.x + 100, pointer.y + 100],
-    {
-      stroke: "#aabbcc",
-      strokeWidth: 2,
-      objectId: uuidv4(),
-    } as CustomFabricObject<fabric.Line>,
-  );
+  return new fabric.Line([pointer.x, pointer.y, pointer.x + 100, pointer.y], {
+    stroke: "#aabbcc",
+    strokeWidth: 2,
+    objectId: uuidv4(),
+  } as CustomFabricObject<fabric.Line>);
 };
 
 export const createText = (pointer: PointerEvent, text: string) => {
@@ -70,7 +69,7 @@ export const createText = (pointer: PointerEvent, text: string) => {
 };
 
 export const createSpecificShape = (
-  shapeType: string,
+  shapeType: ShapeToDraw,
   pointer: PointerEvent,
 ) => {
   switch (shapeType) {
@@ -96,9 +95,11 @@ export const createSpecificShape = (
 
 export const handleImageUpload = ({
   file,
-  canvas,
-  shapeRef,
+  fabricCanvas,
+  modeRef,
+  activeObjectRef,
   syncShapeInStorage,
+  setActiveTool,
 }: ImageUpload) => {
   const reader = new FileReader();
 
@@ -107,31 +108,39 @@ export const handleImageUpload = ({
       console.log(img);
       img.scaleToWidth(200);
       img.scaleToHeight(200);
+      img.originX = "center";
+      img.originY = "center";
+      fabricCanvas.current?.centerObject(img);
 
       // @ts-ignore
       img.objectId = uuidv4();
 
-      canvas.current.add(img);
-
-      shapeRef.current = img;
-
+      activeObjectRef.current = img;
+      fabricCanvas.current?.add(img);
+      fabricCanvas.current?.setActiveObject(img);
+      fabricCanvas.current?.requestRenderAll();
+      modeRef.current = Modes.isSelecting; // Talvez debe ser edit?
+      setActiveTool(ActiveTool.Select);
       syncShapeInStorage(img);
-      canvas.current.requestRenderAll();
     });
   };
 
-  reader.readAsDataURL(file);
+  try {
+    reader.readAsDataURL(file);
+  } catch (error) {
+    console.error(`No se pudo cargar la imagen. Error: ${error}`);
+  }
 };
 
 export const createShape = (
   canvas: fabric.Canvas,
   pointer: PointerEvent,
-  shapeType: string,
+  shapeType: ShapeToDraw,
 ) => {
-  if (shapeType === "freeform") {
-    canvas.isDrawingMode = true;
-    return null;
-  }
+  // if (shapeType === "freeform") {
+  //   canvas.isDrawingMode = true;
+  //   return null;
+  // }
 
   return createSpecificShape(shapeType, pointer);
 };

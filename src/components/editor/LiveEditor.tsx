@@ -1,5 +1,6 @@
 "use client";
-
+import debounce from "debounce";
+import { v4 as uuid4 } from "uuid";
 import { useEffect, useRef, useState } from "react";
 import {
   handleCanvasMouseDown,
@@ -10,6 +11,7 @@ import {
   renderCanvas,
   handleCanvasObjectModified,
   handlePathCreated,
+  handleCanvasMouseDownBefore,
 } from "@/lib/canvas";
 import {
   useMutation,
@@ -24,13 +26,15 @@ import Overlay from "./Overlay";
 import Toolbar from "./Toolbar";
 import { useEditorState } from "@/hooks/useEditorState";
 import useDeleteObject from "@/hooks/useDeleteObject";
-import OverlayOptions from "./OverlayOptions";
+
+import { useSyncInStorage } from "@/hooks/useSyncInStorage";
+
+import Controls from "./Overlay";
+import TopBar from "./TopBar";
+import Properties from "./Properties";
 
 export default function LiveEditor() {
-  const undo = useUndo();
-  const redo = useRedo();
-  const deleteObject = useDeleteObject();
-
+  const canvasObjects = useStorage((root) => root.canvasObjects);
   const {
     activeTool,
     setActiveTool,
@@ -42,62 +46,63 @@ export default function LiveEditor() {
     activeObjectRef,
   } = useEditorState();
 
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const canvasObjects = useStorage((root) => root.canvasObjects);
-
-  const syncShapeInStorage = useMutation(({ storage }, object) => {
-    if (!object) return;
-
-    const { objectId } = object;
-
-    const shapeData = object.toJSON();
-    shapeData.objectId = objectId;
-
-    const canvasObjects = storage.get("canvasObjects");
-    canvasObjects.set(objectId, shapeData);
-  }, []);
-
+  const undo = useUndo();
+  const redo = useRedo();
+  const { syncShapeInStorage } = useSyncInStorage();
+  const deleteObject = useDeleteObject();
   const deleteShapeFromStorage = deleteObject;
 
+  const clipboard = useRef<fabric.Object | null>(null);
+
   useEffect(() => {
-    // initialize the fabric canvas
+    console.log("Active tool:", activeTool);
+  }, [activeTool]);
+
+  useEffect(() => {
     const fabricCanvas = initializeFabric({
       canvasRef,
       fabricRef,
+    });
+
+    fabricCanvas.on("mouse:down:before", (options) => {
+      handleCanvasMouseDownBefore({
+        fabricCanvas,
+        modeRef,
+      });
     });
 
     fabricCanvas.on("mouse:down", (options) => {
       handleCanvasMouseDown({
         options,
         fabricCanvas,
-        selectedShapeRef,
+        shapeToDrawRef,
         activeObjectRef,
-        isDrawing,
-        shapeRef,
-        isMoving,
+        modeRef,
+        newShapeRef,
       });
     });
 
     fabricCanvas.on("mouse:up", (options) => {
       handleCanvasMouseUp({
+        options,
         fabricCanvas,
-        selectedShapeRef,
-        isDrawing,
-        shapeRef,
-        syncShapeInStorage,
+        newShapeRef,
+        shapeToDrawRef,
+        modeRef,
         activeObjectRef,
+        syncShapeInStorage,
         setActiveTool,
       });
     });
 
-    // Cambiar el nombre de la funcion
+    // // Cambiar el nombre de la funcion
     fabricCanvas.on("mouse:move", (options) => {
       handleCanvasMouseMove({
         options,
         fabricCanvas,
-        selectedShapeRef,
-        isDrawing,
-        shapeRef,
+        modeRef,
+        shapeToDrawRef,
+        newShapeRef,
         syncShapeInStorage,
       });
     });
@@ -141,34 +146,74 @@ export default function LiveEditor() {
       });
     });
 
-    canvas.on("path:created", (options) => {
+    fabricCanvas.on("path:created", (options) => {
       handlePathCreated({ options, syncShapeInStorage });
     });
 
     return () => {
-      canvas.dispose();
+      fabricCanvas.dispose();
     };
   }, []);
 
   useEffect(() => {
     renderCanvas({ fabricRef, canvasObjects, activeObjectRef });
-  }, [canvasObjects]);
+  }, [canvasObjects, fabricRef, activeObjectRef]);
+
+  const handleClone = () => {
+    function Copy() {
+      if (fabricRef.current) {
+        fabricRef.current.getActiveObject()?.clone(function (
+          cloned: fabric.Object,
+        ) {
+          clipboard.current = cloned;
+        });
+      }
+    }
+
+    function Paste() {
+      // clone again, so you can do multiple copies.
+      clipboard.current?.clone(function (clonedObj: fabric.Object) {
+        activeObjectRef.current = null;
+        fabricRef.current?.discardActiveObject();
+        clonedObj.set({
+          left: clonedObj.left! + 10,
+          top: clonedObj.top! + 10,
+          //@ts-ignore
+          objectId: uuid4(),
+          evented: true,
+        });
+
+        // Agregarlo al canvas
+        fabricRef.current?.add(clonedObj);
+        fabricRef.current?.setActiveObject(clonedObj);
+        activeObjectRef.current = clonedObj;
+        fabricRef.current?.requestRenderAll();
+        syncShapeInStorage(clonedObj);
+      });
+    }
+
+    Copy();
+    Paste();
+  };
 
   return (
     <div className="relative flex h-full flex-col">
-      {/* Barra de herramientas */}
-      <div className="shrink-0">
-        <Toolbar
-          imageInputRef={imageInputRef}
-          syncShapeInStorage={syncShapeInStorage}
-        />
-      </div>
-
       <div
         id="canvas"
-        className="relative flex-1 select-none bg-muted-foreground"
+        className="relative flex-1 select-none bg-muted dark:bg-muted-foreground"
       >
-        <Overlay />
+        {/* Barra de arriba */}
+        <TopBar />
+
+        {/* Toolbar */}
+        <div className="absolute inset-y-0 left-2 z-50 my-auto flex h-fit flex-col gap-4">
+          <Toolbar syncShapeInStorage={syncShapeInStorage} />
+          <Controls handleClone={handleClone} />
+        </div>
+
+        {/* Propiedades */}
+        <Properties />
+
         {/* <OverlayOptions /> */}
         <canvas ref={canvasRef} />
       </div>

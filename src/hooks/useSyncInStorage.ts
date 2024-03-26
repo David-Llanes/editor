@@ -1,15 +1,31 @@
 import { useMutation } from "@root/liveblocks.config";
 
 export function useSyncInStorage() {
-  return useMutation(({ storage }, object) => {
-    if (!object) return;
+  const syncShapeInStorage = useMutation(({ storage }, object) => {
+    if (Array.isArray(object)) {
+      object.forEach((obj) => {
+        if (!obj) return;
 
-    const { objectId } = object;
+        const { objectId } = obj;
 
-    const shapeData = object.toJSON();
-    shapeData.objectId = objectId;
+        const shapeData = obj.toJSON();
+        shapeData.objectId = objectId;
 
-    const canvasObjects = storage.get("canvasObjects");
-    canvasObjects.set(objectId, shapeData);
+        const canvasObjects = storage.get("canvasObjects");
+        canvasObjects.set(objectId, shapeData);
+      });
+      return;
+    } else {
+      if (!object) return;
+
+      const { objectId } = object;
+
+      const shapeData = object.toJSON();
+      shapeData.objectId = objectId;
+
+      const canvasObjects = storage.get("canvasObjects");
+      canvasObjects.set(objectId, shapeData);
+    }
   }, []);
+  return { syncShapeInStorage };
 }

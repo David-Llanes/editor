@@ -1,3 +1,11 @@
+import {
+  ActiveObjectType,
+  FabricCanvasType,
+  ModeType,
+  NewShapeType,
+  SetActiveToolType,
+  ShapeToDrawType,
+} from "@/hooks/useEditorState";
 import { BaseUserMeta, User } from "@liveblocks/client";
 import { Gradient, Pattern } from "fabric/fabric-impl";
 import { Dispatch, SetStateAction } from "react";
@@ -118,9 +126,11 @@ export type ElementDirection = {
 
 export type ImageUpload = {
   file: File;
-  canvas: React.MutableRefObject<fabric.Canvas>;
-  shapeRef: React.MutableRefObject<fabric.Object | null>;
+  modeRef: ModeType;
+  fabricCanvas: FabricCanvasType; //React.MutableRefObject<fabric.Canvas>;
+  activeObjectRef: ActiveObjectType;
   syncShapeInStorage: (shape: fabric.Object) => void;
+  setActiveTool: SetActiveToolType;
 };
 
 export type RightSidebarProps = {
@@ -157,33 +167,38 @@ export type LiveCursorProps = {
   others: readonly User<Presence, BaseUserMeta>[];
 };
 
+export type CanvasMouseDownBefore = {
+  fabricCanvas: fabric.Canvas;
+  modeRef: ModeType;
+};
+
 export type CanvasMouseDown = {
   options: fabric.IEvent;
-  canvas: fabric.Canvas;
-  selectedShapeRef: any;
-  isMoving: React.MutableRefObject<boolean>;
-  activeObjectRef: React.MutableRefObject<fabric.Object | null>;
-  isDrawing: React.MutableRefObject<boolean>;
-  shapeRef: React.MutableRefObject<fabric.Object | null>;
+  fabricCanvas: fabric.Canvas;
+  activeObjectRef: ActiveObjectType;
+  modeRef: ModeType;
+  shapeToDrawRef: ShapeToDrawType;
+  newShapeRef: NewShapeType;
 };
 
 export type CanvasMouseMove = {
   options: fabric.IEvent;
-  canvas: fabric.Canvas;
-  isDrawing: React.MutableRefObject<boolean>;
-  selectedShapeRef: any;
-  shapeRef: any;
+  fabricCanvas: fabric.Canvas;
+  modeRef: ModeType;
+  shapeToDrawRef: ShapeToDrawType;
+  newShapeRef: NewShapeType;
   syncShapeInStorage: (shape: fabric.Object) => void;
 };
 
 export type CanvasMouseUp = {
-  canvas: fabric.Canvas;
-  isDrawing: React.MutableRefObject<boolean>;
-  shapeRef: any;
-  activeObjectRef: React.MutableRefObject<fabric.Object | null>;
-  selectedShapeRef: any;
+  options: fabric.IEvent;
+  fabricCanvas: fabric.Canvas;
+  modeRef: ModeType;
+  newShapeRef: NewShapeType;
+  activeObjectRef: ActiveObjectType;
+  shapeToDrawRef: ShapeToDrawType;
   syncShapeInStorage: (shape: fabric.Object) => void;
-  setActiveTool: any;
+  setActiveTool: SetActiveToolType;
 };
 
 export type CanvasObjectModified = {

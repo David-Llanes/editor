@@ -3,6 +3,8 @@ import { Urbanist, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DevTools } from "@/components/DevTools";
+import { Toaster } from "@/components/ui/toaster";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-urbanist" });
 const work_sans = Work_Sans({
@@ -24,18 +26,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${work_sans.variable} ${urbanist.variable}`}>
-      <body className={`${urbanist.className} bg-background text-foreground`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange={false}
-        >
-          <DevTools />
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${work_sans.variable} ${urbanist.variable}`}>
+        <body className={`${urbanist.className} bg-background text-foreground`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            {/* <DevTools /> */}
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -1,4 +1,12 @@
-import { Redo2Icon, RotateCcw, Trash2, Undo2Icon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CopyPlus,
+  Redo2Icon,
+  RotateCcw,
+  Trash2,
+  Undo2Icon,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import {
   useRedo,
@@ -11,7 +19,7 @@ import useDeleteObject from "@/hooks/useDeleteObject";
 import { handleDelete } from "@/lib/key-events";
 import { useEditorState } from "@/hooks/useEditorState";
 
-export default function Overlay() {
+export default function Controls({ handleClone }: { handleClone: any }) {
   const undo = useUndo();
   const redo = useRedo();
   const deleteAll = useDeleteAll();
@@ -23,12 +31,24 @@ export default function Overlay() {
 
   return (
     <>
-      <div className="absolute left-4 top-4 z-50 flex rounded-md bg-card shadow-sm">
-        <Button variant="ghost" size="icon" disabled={!canUndo} onClick={undo}>
-          <Undo2Icon />
+      <div className="flex flex-col items-center justify-center rounded-md bg-card p-1 shadow-sm">
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={!canUndo}
+          onClick={undo}
+          className="size-8 rounded-md text-foreground transition-colors hover:bg-accent hover:text-muted-foreground md:size-10"
+        >
+          <ArrowLeft className="size-4 md:size-6" />
         </Button>
-        <Button variant="ghost" size="icon" disabled={!canRedo} onClick={redo}>
-          <Redo2Icon />
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={!canRedo}
+          onClick={redo}
+          className="size-8 rounded-md text-foreground transition-colors hover:bg-accent hover:text-muted-foreground md:size-10"
+        >
+          <ArrowRight className="size-4 md:size-6" />
         </Button>
         <Button
           variant="ghost"
@@ -36,16 +56,26 @@ export default function Overlay() {
           onClick={() =>
             handleDelete(fabricRef.current as fabric.Canvas, deleteObject)
           }
+          className="size-8 rounded-md text-foreground  transition-colors hover:bg-accent hover:text-destructive md:size-10"
         >
-          <Trash2 />
+          <Trash2 className="size-4 md:size-6" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={deleteAll}
           disabled={!canDeleteAll}
+          className="size-8 rounded-md text-foreground transition-colors hover:bg-accent hover:text-muted-foreground md:size-10"
         >
-          <RotateCcw />
+          <RotateCcw className="size-4 md:size-6" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClone}
+          className="size-8 rounded-md text-foreground transition-colors hover:bg-accent hover:text-muted-foreground md:size-10"
+        >
+          <CopyPlus className="size-4 md:size-6" />
         </Button>
       </div>
     </>

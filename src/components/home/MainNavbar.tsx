@@ -1,5 +1,6 @@
 "use client";
 
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { ThemeToggle } from "../ThemeToggle";
 import Link from "next/link";
 import Image from "next/image";
@@ -29,7 +30,7 @@ const links = [
   { label: "Canvas", href: "/canvas" },
 ];
 
-const currentRoute = "/templates";
+const currentRoute = "/";
 
 export default function MainNavbar() {
   const isLogged = true;
@@ -103,7 +104,7 @@ export default function MainNavbar() {
                 <span className="lg:hidden">Diseña</span>
                 <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Button>
-              {isLogged ? (
+              {/* {isLogged ? (
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger
                     asChild
@@ -124,7 +125,19 @@ export default function MainNavbar() {
                 </DropdownMenu>
               ) : (
                 <Button variant="link">Log in</Button>
-              )}
+              )} */}
+
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+
+              <SignedOut>
+                <Button variant="outline" size="sm">
+                  <Link href="/sign-up" className="text-sm">
+                    Iniciar sesión
+                  </Link>
+                </Button>
+              </SignedOut>
               <div className="max-md:hidden">
                 <ThemeToggle />
               </div>

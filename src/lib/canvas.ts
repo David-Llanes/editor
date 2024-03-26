@@ -4,6 +4,7 @@ import { v4 as uuid4 } from "uuid";
 import {
   ActiveTool,
   CanvasMouseDown,
+  CanvasMouseDownBefore,
   CanvasMouseMove,
   CanvasMouseUp,
   CanvasObjectModified,
@@ -13,6 +14,10 @@ import {
   RenderCanvas,
 } from "@/types/type";
 import { createSpecificShape } from "./shapes";
+import { Modes, ShapeToDraw } from "@/hooks/useEditorState";
+
+const rotateIcon = document.createElement("img");
+rotateIcon.src = "../../assets/editor/rotateControl.png";
 
 function renderIcon(icon: HTMLImageElement) {
   return function renderIcon(
@@ -22,10 +27,10 @@ function renderIcon(icon: HTMLImageElement) {
     styleOverride: any,
     fabricObject: fabric.Object,
   ) {
-    var size = 20;
+    var size = 30;
     ctx.save();
     ctx.translate(left, top);
-    ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle as number));
+    ctx.rotate(fabric.util.degreesToRadians(fabricObject.angle!));
     ctx.drawImage(icon, -size / 2, -size / 2, size, size);
     ctx.restore();
   };
@@ -106,21 +111,30 @@ export const initializeFabric = ({
   // get element container
   const element = document.getElementById("canvas");
 
+  // const rect = new fabric.Rect({
+  //   width: 500,
+  //   height: 500,
+  //   absolutePositioned: true,
+  // });
+
   // create fabric canvas
   const canvas = new fabric.Canvas(canvasRef.current, {
     width: element?.clientWidth,
     height: element?.clientHeight,
+    selectionDashArray: [5, 5],
+    selectionBorderColor: "#0094FF",
+    selectionColor: "#0094FF10",
+    // clipPath: rect,
+    controlsAboveOverlay: true,
+    fireRightClick: true,
+    stopContextMenu: true,
+    imageSmoothingEnabled: true,
   });
 
-  //Modify the canvas
-  canvas.selectionDashArray = [5, 5];
-  canvas.selectionBorderColor = "#0094FF"; // Azul
-  canvas.selectionColor = "#0094FF10"; // Azul con opacidad baja
+  // canvas.add(rect);
+  // canvas.centerObject(rect);
 
   //Modificar los los controles
-  console.log(fabric.Object.prototype.controls);
-
-  // fabric.Object.prototype.originX = fabric.Object.prototype.originY = "center";
   fabric.Object.prototype.transparentCorners = false;
   fabric.Object.prototype.cornerColor = "#FFFFFF";
   fabric.Object.prototype.cornerStyle = "circle";
@@ -140,6 +154,7 @@ export const initializeFabric = ({
     sizeY: 25,
     y: 0.5,
     offsetY: 50,
+    render: renderIcon(rotateIcon),
   });
   fabric.Object.prototype.controls = controls;
 
@@ -149,180 +164,171 @@ export const initializeFabric = ({
   return canvas;
 };
 
-// instantiate creation of custom fabric object/shape and add it to canvas
-export const handleCanvasMouseDown = ({
-  options,
-  canvas,
-  selectedShapeRef,
-  activeObjectRef,
-  isDrawing,
-  shapeRef,
-  isMoving,
-}: CanvasMouseDown) => {
-  // get pointer coordinates
-  const pointer = canvas.getPointer(options.e);
-
-  // if selected shape is freeform, set drawing mode to true and return
-  if (selectedShapeRef.current === "freeform") {
-    isDrawing.current = true;
-    canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.width = 5;
+// Aqui se van a cambiar las propiedades de los objetos antes de dibujarlos
+export const handleCanvasMouseDownBefore = ({
+  fabricCanvas,
+  modeRef,
+}: CanvasMouseDownBefore) => {
+  if (modeRef.current === Modes.isFreeForm) {
+    fabricCanvas.freeDrawingBrush.width = 5;
     return;
   }
 
-  canvas.isDrawingMode = false;
+  if (modeRef.current === Modes.isDrawing) {
+    fabricCanvas.selection = false;
+    return;
+  }
 
-  /**
-   * get target object i.e., the object that is clicked
-   * findtarget() returns the object that is clicked
-   *
-   * findTarget: http://fabricjs.com/docs/fabric.Canvas.html#findTarget
-   */
-  const target = canvas.findTarget(options.e, false);
+  if (modeRef.current === Modes.isMoving) {
+    return;
+  }
+  fabricCanvas.selection = true;
+};
 
-  // set canvas drawing mode to false
-  // canvas.isDrawingMode = false;
+// instantiate creation of custom fabric object/shape and add it to canvas
+export const handleCanvasMouseDown = ({
+  options,
+  fabricCanvas,
+  shapeToDrawRef,
+  activeObjectRef,
+  modeRef,
+  newShapeRef,
+}: CanvasMouseDown) => {
+  if (modeRef.current === Modes.isFreeForm) return;
 
-  // if target is the selected shape or active selection, set isDrawing to false
-  if (target) {
-    activeObjectRef.current = target;
+  // findtarget() returns the object that is clicked
+  // findTarget: http://fabricjs.com/docs/fabric.Canvas.html#findTarget
+  const target = fabricCanvas.findTarget(options.e, false);
 
-    if (activeObjectRef.current) {
-      activeObjectRef.current.set({ fill: "red", stroke: "black" });
+  // get pointer coordinates
+  const pointer = fabricCanvas.getPointer(options.e);
+
+  if (modeRef.current === Modes.isMoving) {
+    // TODO: Implementar el movimiento DEL CANVAS
+  }
+
+  if (modeRef.current === Modes.isSelecting) {
+    if (target) {
+      activeObjectRef.current = target;
+      activeObjectRef.current.set({
+        fill: "#0094FF",
+        strokeWidth: 0,
+      });
+      fabricCanvas.setActiveObject(target);
+      console.log("Objeto activo", activeObjectRef.current);
+      // target.setCoords();
+      fabricCanvas.requestRenderAll();
     }
-    isDrawing.current = false;
-    // set active object to target
-    canvas.setActiveObject(target);
-    console.log(activeObjectRef.current);
-
-    /**
-     * setCoords() is used to update the controls of the object
-     * setCoords: http://fabricjs.com/docs/fabric.Object.html#setCoords
-     */
-    target.setCoords();
-  } else {
-    isDrawing.current = true;
-
-    // create custom fabric object/shape and set it to shapeRef
-    shapeRef.current = createSpecificShape(
-      selectedShapeRef.current,
-      pointer as any,
-    );
-
-    // if shapeRef is not null, add it to canvas
-    if (shapeRef.current) {
-      // add: http://fabricjs.com/docs/fabric.Canvas.html#add
-      canvas.add(shapeRef.current);
-      // set active object to shapeRef
-      activeObjectRef.current = shapeRef.current;
-    }
+    return;
   }
 };
 
 // handle mouse move event on canvas to draw shapes with different dimensions
 export const handleCanvasMouseMove = ({
   options,
-  canvas,
-  isDrawing,
-  selectedShapeRef,
-  shapeRef,
+  fabricCanvas,
+  modeRef,
+  shapeToDrawRef,
+  newShapeRef,
   syncShapeInStorage,
 }: CanvasMouseMove) => {
   // if selected shape is freeform, return
-  if (!isDrawing.current) return;
-  if (selectedShapeRef.current === "freeform") return;
-
-  canvas.isDrawingMode = false;
-
-  // get pointer coordinates
-  const pointer = canvas.getPointer(options.e);
-
-  // get w, h and r
-  const width = pointer.x - (shapeRef.current?.left || 0);
-  const height = pointer.y - (shapeRef.current?.top || 0);
-  const radius = Math.abs(pointer.x - (shapeRef.current?.left || 0)) / 2;
-
-  // depending on the selected shape, set the dimensions of the shape stored in shapeRef in previous step of handleCanvasMouseDown
-  // calculate shape dimensions based on pointer coordinates
-  switch (selectedShapeRef?.current) {
-    case "rectangle":
-      shapeRef.current?.set({
-        width: width > 50 ? width : 50,
-        height: height > 50 ? height : 50,
-      });
-      break;
-
-    case "circle":
-      shapeRef.current.set({
-        radius: radius > 25 ? radius : 25,
-      });
-      break;
-
-    case "triangle":
-      shapeRef.current?.set({
-        width: width > 50 ? width : 50,
-        height: height > 50 ? height : 50,
-      });
-      break;
-
-    case "line":
-      shapeRef.current?.set({
-        x2: pointer.x,
-        y2: pointer.y,
-      });
-      break;
-
-    // case "image":
-    //   shapeRef.current?.set({
-    //     width: pointer.x - (shapeRef.current?.left || 0),
-    //     height: pointer.y - (shapeRef.current?.top || 0),
-    //   });
-
-    default:
-      break;
+  if (modeRef.current === Modes.isFreeForm) {
+    fabricCanvas.freeDrawingBrush.width = 5;
+    return;
   }
 
-  // render objects on canvas
-  // renderAll: http://fabricjs.com/docs/fabric.Canvas.html#renderAll
-  canvas.renderAll();
+  const pointer = fabricCanvas.getPointer(options.e);
+
+  if (modeRef.current === Modes.isMoving) {
+    // TODO Implementar el movimiento del canvas
+  }
+
+  // if (modeRef.current === Modes.isDrawing) {
+  //   // get w, h and r
+  //   const width = pointer.x - (newShapeRef.current?.left || 0);
+  //   const height = pointer.y - (newShapeRef.current?.top || 0);
+  //   const radius = Math.abs(pointer.x - (newShapeRef.current?.left || 0)) / 2;
+
+  //   switch (shapeToDrawRef?.current) {
+  //     case "rect":
+  //       newShapeRef.current?.set({
+  //         width: width,
+  //         height: height,
+  //       } as fabric.Rect);
+  //       break;
+  //     case "circle":
+  //       newShapeRef.current?.set({
+  //         radius: radius,
+  //       } as fabric.Circle);
+  //       break;
+  //     case "triangle":
+  //       newShapeRef.current?.set({
+  //         width: width,
+  //         height: height,
+  //       } as fabric.Triangle);
+  //       break;
+  //     case "line":
+  //       newShapeRef.current?.set({
+  //         x2: pointer.x,
+  //         y2: pointer.y,
+  //       } as fabric.Line);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   // render objects on canvas
+  //   // renderAll: http://fabricjs.com/docs/fabric.Canvas.html#renderAll
+  //   fabricCanvas.renderAll();
+  // }
 
   // sync shape in storage
-  if (shapeRef.current?.objectId) {
-    syncShapeInStorage(shapeRef.current);
-  }
+  // if (newShapeRef.current?.objectId) {
+  //   syncShapeInStorage(shapeRef.current);
+  // }
 };
 
 // handle mouse up event on canvas to stop drawing shapes
 export const handleCanvasMouseUp = ({
-  canvas,
-  isDrawing,
-  shapeRef,
+  options,
+  fabricCanvas,
+  modeRef,
+  newShapeRef,
+  shapeToDrawRef,
   activeObjectRef,
-  selectedShapeRef,
   syncShapeInStorage,
   setActiveTool,
 }: CanvasMouseUp) => {
-  isDrawing.current = false;
-  if (selectedShapeRef.current === "freeform") return;
+  if (modeRef.current === Modes.isFreeForm) return;
 
-  // set as active the new created shape
-  // activeObjectRef.current = shapeRef.current;
+  const pointer = fabricCanvas.getPointer(options.e);
 
-  // sync shape in storage as drawing is stopped
-  syncShapeInStorage(shapeRef.current);
+  if (modeRef.current === Modes.isDrawing && shapeToDrawRef.current) {
+    newShapeRef.current = createSpecificShape(
+      shapeToDrawRef.current,
+      pointer as any, // TODO arreglar estos tipos
+    );
 
-  // nothing is left to add, we already added the shape to the canvas
-  activeObjectRef.current = null;
-  shapeRef.current = null;
-  // no shape is selected
-  selectedShapeRef.current = null;
+    // if shapeRef is not null, add it to canvas
+    if (newShapeRef.current) {
+      console.log("La forma creada es la siguiente: ", newShapeRef.current);
+      fabricCanvas.add(newShapeRef.current);
+      activeObjectRef.current = newShapeRef.current;
+      activeObjectRef.current?.set({ fill: "blue", strokeWidth: 0 });
+      fabricCanvas.setActiveObject(newShapeRef.current);
 
-  // if canvas is not in drawing mode, set active element to default nav element after
-  if (!canvas.isDrawingMode) {
-    setTimeout(() => {
-      setActiveTool(ActiveTool.Select);
-    }, 100);
+      // sync shape in storage as drawing is stopped
+      syncShapeInStorage(newShapeRef.current);
+    }
+
+    modeRef.current = Modes.isSelecting;
+    setActiveTool(ActiveTool.Select);
   }
+
+  newShapeRef.current = null;
+  shapeToDrawRef.current = null;
+  fabricCanvas.requestRenderAll();
 };
 
 // update shape in storage when object is modified
@@ -353,6 +359,8 @@ export const handlePathCreated = ({
   path.set({
     objectId: uuid4(),
   });
+
+  //TODO: Talvez se deba hacer que se seleccione y se marque como activeObject??
 
   // sync shape in storage
   syncShapeInStorage(path);
@@ -486,7 +494,7 @@ export const renderCanvas = ({
         enlivenedObjects.forEach((enlivenedObj) => {
           // if element is active, keep it in active state so that it can be edited further
           if (activeObjectRef.current?.objectId === objectId) {
-            console.log(enlivenedObj);
+            console.log("Objeto activo enliven", enlivenedObj);
             fabricRef.current?.setActiveObject(enlivenedObj);
           }
 

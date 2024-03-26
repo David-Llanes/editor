@@ -3,6 +3,7 @@ import Container from "../Container";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -25,7 +26,9 @@ export default function HeroSection() {
               size="lg"
               className="group font-bold max-md:flex-1"
             >
-              <span className="hidden sm:block">Comenzar a diseñar</span>
+              <Link href="/canvas" className="hidden sm:block">
+                Comenzar a diseñar
+              </Link>
               <span className="sm:hidden">Diseñar</span>
               <ChevronRight className="size-4 transition-transform group-hover:translate-x-2" />
             </Button>
